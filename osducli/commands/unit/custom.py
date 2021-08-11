@@ -5,7 +5,6 @@
 # -----------------------------------------------------------------------------
 
 """Custom cluster upgrade specific commands"""
-from collections import OrderedDict
 from urllib.parse import urljoin
 import requests
 from osducli.connection import get_headers
@@ -21,14 +20,10 @@ def unit_list():
     headers = get_headers()
 
     server = get_config_value('server', 'core')
-    search_url = get_config_value('unit_url', 'core')
-    url = urljoin(server, search_url) + 'unit?limit=10000'
+    unit_url = get_config_value('unit_url', 'core')
+    url = urljoin(server, unit_url) + 'unit?limit=10000'
     response = requests.get(url,
                             headers=headers)
 
-    search_response = response.json()
-    # print(json.dumps(search_response, indent=2))
-
-    services = [OrderedDict([('DisplaySymbol', record['displaySymbol']), ('Name', record['name'])])
-                for record in search_response['units']]
-    return services
+    unit_response = response.json()
+    return(unit_response)
