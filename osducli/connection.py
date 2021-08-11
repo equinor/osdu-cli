@@ -58,7 +58,7 @@ class TokenManager:
         _refresh_token = get_config_value("REFRESH_TOKEN", "core")
         _client_id = get_config_value("CLIENT_ID", "core")
         _client_secret = get_config_value("CLIENT_SECRET", "core")
-    except (NoOptionError, NoSectionError) as ex:
+    except (NoOptionError, NoSectionError):  # as ex:
         pass
         # logger.warn("'%s' missing from configuration. Run osducli configure", ex.args[0])
         # sys.exit(0)
