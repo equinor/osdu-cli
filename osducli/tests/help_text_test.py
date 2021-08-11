@@ -8,7 +8,6 @@
 This only tests for commands/subgroups which are specified in this file.
 This does not test the correctness of help text content."""
 
-from __future__ import print_function
 import unittest
 from subprocess import Popen, PIPE
 
@@ -279,15 +278,24 @@ class HelpTextTests(unittest.TestCase):
 
         self.validate_output(
             'osducli',
-            subgroups=('bulkload', 'ls'))
+            subgroups=('bulkload', 'list'),
+            commands=('configure', 'status', 'version'))
 
         self.validate_output(
             'osducli bulkload',
             commands=('invoke-api', 'logs'))
 
         self.validate_output(
-            'osducli ls',
-            commands=('upgrade', 'upgrade-update'))
+            'osducli list',
+            commands=('records', 'upgrade-update'))
+
+        self.validate_output(
+            'osducli configure',
+            commands=())
+
+        self.validate_output(
+            'osducli status',
+            commands=())
 
         self.validate_output(
             'osducli version',

@@ -8,7 +8,7 @@
 
 import os
 import re
-from setuptools import setup
+from setuptools import setup, find_packages
 
 
 def read(fname):
@@ -43,10 +43,7 @@ setup(
     ],
     keywords='osdu',
     python_requires='>=3.6',
-    packages=[
-        'osducli',
-        'osducli.tests'
-    ],
+    packages=find_packages(exclude=['*tests*']),
     install_requires=[
         'knack==0.8.2',
         'msrest>=0.5.0',
