@@ -1,5 +1,5 @@
 
-name: osducli
+name: build
 
 on:
   push:
