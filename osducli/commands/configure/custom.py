@@ -58,7 +58,8 @@ def _handle_configuration(config):
                                           default=get_default_from_config(config,
                                                                           'core',
                                                                           'output',
-                                                                          OUTPUT_LIST))
+                                                                          OUTPUT_LIST,
+                                                                          fallback=3))
         answers['output_type_prompt'] = output_index
         answers['output_type_options'] = str(OUTPUT_LIST)
         server = prompt(MSG_PROMPT_SERVER)
