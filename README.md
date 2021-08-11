@@ -2,11 +2,16 @@
 
 [![PyPi Version](https://img.shields.io/pypi/v/osducli.svg)](https://pypi.org/project/osducli/)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/osducli.svg)](https://pypi.org/project/osducli/)
-TODO Other badges
+
+TODO: Other badges (build status, coverage, ..)
 
 Command-line interface for interacting with OSDU.
 
+![OSDU CLI](/documentation/osducli.png)
+
 ## Installation
+
+Usage requires that you have a valid python 3.7+ installation on your machine. You might also consider creating a seperate python [virtual environment](https://docs.python.org/3/library/venv.html) for working with OSDU.
 
 ### Alternative 1 - Deploy from PyPi
 
@@ -33,7 +38,7 @@ See the
 [corresponding wiki](https://github.com/equinor/osdu-cli/wiki) for
 more information.
 
-## Launching
+## Usage
 
 The first time you use the CLI you should run the configure command to provide connection information and other important configuration.
 
