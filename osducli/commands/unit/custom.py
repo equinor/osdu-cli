@@ -6,7 +6,6 @@
 
 """Custom cluster upgrade specific commands"""
 from collections import OrderedDict
-import json
 from urllib.parse import urljoin
 import requests
 from osducli.connection import get_headers
