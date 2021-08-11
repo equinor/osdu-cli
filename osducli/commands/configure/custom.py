@@ -8,6 +8,7 @@
 import configparser
 import os
 from knack.prompting import prompt, prompt_y_n, prompt_choice_list, prompt_pass
+from osducli.config import get_default_from_config
 from osducli.commands.configure.consts import (MSG_INTRO,
                                                MSG_CLOSING,
                                                MSG_GLOBAL_SETTINGS_LOCATION,
@@ -54,10 +55,10 @@ def _handle_configuration(config):
         should_modify_global_config = prompt_y_n(MSG_PROMPT_MANAGE_GLOBAL, default='n')
     if not config_exists or should_modify_global_config:
         output_index = prompt_choice_list(MSG_PROMPT_GLOBAL_OUTPUT, OUTPUT_LIST,
-                                          default=config.get_default_from_config(config,
-                                                                                 'core',
-                                                                                 'output',
-                                                                                 OUTPUT_LIST))
+                                          default=get_default_from_config(config,
+                                                                          'core',
+                                                                          'output',
+                                                                          OUTPUT_LIST))
         answers['output_type_prompt'] = output_index
         answers['output_type_options'] = str(OUTPUT_LIST)
         server = prompt(MSG_PROMPT_SERVER)

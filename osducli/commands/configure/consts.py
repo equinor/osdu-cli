@@ -16,7 +16,7 @@ OUTPUT_LIST = [
     {'name': 'none', 'desc': 'No output, except for errors and warnings.'}
 ]
 
-MSG_INTRO = '\nWelcome to the Azure CLI! This command will guide you through logging in and ' \
+MSG_INTRO = '\nWelcome to the OSDU CLI! This command will guide you through logging in and ' \
             'setting some default values.\n'
 MSG_CLOSING = '\nYou\'re all set! Here are some commands to try:\n' \
               ' $ osducli login\n' \
