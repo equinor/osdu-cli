@@ -4,11 +4,13 @@
 [![PyPi Version](https://img.shields.io/pypi/v/osducli.svg)](https://pypi.org/project/osducli/)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/osducli.svg)](https://pypi.org/project/osducli/)
 
-TODO: Other badges (build status, coverage, ..)
+TODO: Other badges (coverage, ..)
 
 Command-line interface for interacting with OSDU.
 
 ![OSDU CLI](/documentation/osducli.png)
+
+:warning: Note that this is a work in progress and is not complete / might contain bugs.
 
 ## Installation
 
