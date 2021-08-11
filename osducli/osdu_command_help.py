@@ -13,8 +13,9 @@ from knack.help_files import helps
 # Need to import so global help dict gets updated
 import osducli.commands.bulkload.help  # noqa: F401; pylint: disable=unused-import
 import osducli.commands.configure.help  # noqa: F401; pylint: disable=unused-import
-import osducli.commands.status.help  # noqa: F401; pylint: disable=unused-import
 import osducli.commands.list.help  # noqa: F401; pylint: disable=unused-import
+import osducli.commands.status.help  # noqa: F401; pylint: disable=unused-import
+import osducli.commands.unit.help  # noqa: F401; pylint: disable=unused-import
 import osducli.commands.version.help  # noqa: F401; pylint: disable=unused-import
 
 WELCOME_MESSAGE = r"""

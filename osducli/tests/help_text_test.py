@@ -278,7 +278,7 @@ class HelpTextTests(unittest.TestCase):
 
         self.validate_output(
             'osducli',
-            subgroups=('bulkload', 'list'),
+            subgroups=('bulkload', 'list', 'unit'),
             commands=('configure', 'status', 'version'))
 
         self.validate_output(
@@ -288,6 +288,10 @@ class HelpTextTests(unittest.TestCase):
         self.validate_output(
             'osducli list',
             commands=('records', 'upgrade-update'))
+
+        self.validate_output(
+            'osducli unit',
+            commands=('list'))
 
         self.validate_output(
             'osducli configure',
