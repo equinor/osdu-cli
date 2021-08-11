@@ -6,7 +6,7 @@
 """Useful functions."""
 
 import sys
-from configparser import ConfigParser, NoOptionError
+from configparser import NoOptionError, NoSectionError
 from datetime import datetime
 from json import loads
 from urllib.error import HTTPError
@@ -50,8 +50,6 @@ class TokenManager:
 
     Requires "REFRESH_TOKEN", "CLIENT_ID", "CLIENT_SECRET" in environment variables
     """
-    _config = ConfigParser()
-    _config.read("config/dataload.ini")
     expire_date = 0
 
     try:
@@ -60,7 +58,7 @@ class TokenManager:
         _refresh_token = get_config_value("REFRESH_TOKEN", "core")
         _client_id = get_config_value("CLIENT_ID", "core")
         _client_secret = get_config_value("CLIENT_SECRET", "core")
-    except NoOptionError as e:
+    except (NoOptionError, NoSectionError) as e:
         logger.error("'%s' missing from configuration. Run osducli configure", e.args[0])
         sys.exit(0)
 
@@ -124,9 +122,9 @@ class TokenManager:
         data = urlencode(body).encode("utf8")
         request = Request(url=url, data=data, headers=headers)
         try:
-            response = urlopen(request)
-            response_body = response.read()
-            return loads(response_body)
+            with urlopen(request) as response:
+                response_body = response.read()
+                return loads(response_body)
         except HTTPError as ex:
             code = ex.code
             message = ex.read().decode("utf8")
