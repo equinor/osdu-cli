@@ -8,7 +8,7 @@
 
 import os
 import json
-# from six.moves import configparser  # pylint: disable=redefined-builtin
+from six.moves import configparser  # pylint: disable=redefined-builtin
 from knack.config import CLIConfig, _UNSET
 from adal.token_cache import TokenCache
 
@@ -58,7 +58,7 @@ def get_default_from_config(config, section, option, choice_list, fallback=1):
         config_val = config.get(section, option)
         return [i for i, x in enumerate(choice_list)
                 if 'name' in x and x['name'] == config_val][0] + 1
-    except IndexError:  # , configparser.NoSectionError, configparser.NoOptionError):
+    except (IndexError, configparser.NoSectionError, configparser.NoOptionError):
         return fallback
 
 
