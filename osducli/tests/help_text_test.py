@@ -291,7 +291,7 @@ class HelpTextTests(unittest.TestCase):
 
         self.validate_output(
             'osducli unit',
-            commands=('list'))
+            commands=('list',))
 
         self.validate_output(
             'osducli configure',

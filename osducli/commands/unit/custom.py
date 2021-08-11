@@ -12,7 +12,7 @@ from osducli.connection import get_headers
 from osducli.config import get_config_value
 
 
-def list():
+def unit_list():
     """[summary]
 
     Args:

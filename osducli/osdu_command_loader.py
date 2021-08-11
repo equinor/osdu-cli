@@ -60,7 +60,7 @@ class OsduCommandLoader(CLICommandsLoader):
             group.command('status', 'status', table_transformer=dont_order_columns_table_transformer)
 
         with CommandGroup(self, 'unit', self.command_group_module('unit')) as group:
-            group.command('list', 'list', table_transformer=dont_order_columns_table_transformer)
+            group.command('list', 'unit_list', table_transformer=dont_order_columns_table_transformer)
 
         with CommandGroup(self, '', self.command_group_module('version')) as group:
             group.command('version', 'version')
