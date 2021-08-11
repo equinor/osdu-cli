@@ -54,13 +54,51 @@ class TokenManager:
 
     try:
         _retries = get_config_int("retries", "core", 2)
-        _token_endpoint = get_config_value("token_endpoint", "core")
-        _refresh_token = get_config_value("REFRESH_TOKEN", "core")
-        _client_id = get_config_value("CLIENT_ID", "core")
-        _client_secret = get_config_value("CLIENT_SECRET", "core")
-    except (NoOptionError, NoSectionError) as e:
-        logger.error("'%s' missing from configuration. Run osducli configure", e.args[0])
+        # TODO Below are converted to methods to allow for lazy loading so the cli can start  # pylint: disable=fixme
+        # TODO  even if a config file isn't found. Need to perhaps rework this.  # pylint: disable=fixme
+        # _token_endpoint = get_config_value("token_endpoint", "core")
+        # _refresh_token = get_config_value("REFRESH_TOKEN", "core")
+        # _client_id = get_config_value("CLIENT_ID", "core")
+        # _client_secret = get_config_value("CLIENT_SECRET", "core")
+    except (NoOptionError, NoSectionError) as ex:
+        logger.error("'%s' missing from configuration. Run osducli configure", ex.args[0])
         sys.exit(0)
+
+    @staticmethod
+    def _token_endpoint():  # pylint: disable=E0213
+        """ Lazy load of token endpoint """
+        try:
+            return get_config_value("token_endpoint", "core")
+        except (NoOptionError, NoSectionError) as ex:
+            logger.error("'%s' missing from configuration. Run osducli configure", ex.args[0])
+            sys.exit(0)
+
+    @staticmethod
+    def _refresh_token():  # pylint: disable=E0213
+        """ Lazy load of refresh token """
+        try:
+            return get_config_value("REFRESH_TOKEN", "core")
+        except (NoOptionError, NoSectionError) as ex:
+            logger.error("'%s' missing from configuration. Run osducli configure", ex.args[0])
+            sys.exit(0)
+
+    @staticmethod
+    def _client_id():  # pylint: disable=E0213
+        """ Lazy load of client id """
+        try:
+            return get_config_value("CLIENT_ID", "core")
+        except (NoOptionError, NoSectionError) as ex:
+            logger.error("'%s' missing from configuration. Run osducli configure", ex.args[0])
+            sys.exit(0)
+
+    @staticmethod
+    def _client_secret():  # pylint: disable=E0213
+        """ Lazy load of client secret """
+        try:
+            return get_config_value("CLIENT_SECRET", "core")
+        except (NoOptionError, NoSectionError) as ex:
+            logger.error("'%s' missing from configuration. Run osducli configure", ex.args[0])
+            sys.exit(0)
 
     @classproperty
     def id_token(cls):  # pylint: disable=E0213
