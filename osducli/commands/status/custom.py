@@ -31,8 +31,8 @@ def status():
     """
     headers = get_headers()
 
+    services = []
     try:
-        services = []
         server = get_config_value('server', 'core')
 
         code, reason = _get_status(server, get_config_value('search_url', 'core'), 'health/readiness_check', headers)
@@ -50,7 +50,7 @@ def status():
         code, reason = _get_status(server, get_config_value('file_url', 'core'), 'readiness_check', headers)
         services.append(OrderedDict([('Service', 'File service'), ('Code', code), ('Reason', reason)]))
 
-        return services
     except (IndexError, NoSectionError, NoOptionError) as ex:
         logger.error("'%s' missing from configuration. Run osducli configure or add manually", ex.args[0])
-        return
+
+    return services
