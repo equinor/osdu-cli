@@ -26,4 +26,4 @@ def unit_list():
                             headers=headers)
 
     unit_response = response.json()
-    return(unit_response)
+    return unit_response
