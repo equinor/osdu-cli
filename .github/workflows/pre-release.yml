@@ -3,11 +3,11 @@ name: Publish to Test PyPI
 
 # Notes - do we need to use build matrix test strategy - e.g. can this run if the other fails
 # Set as manual only for now due to the above.
-on: workflow_dispatch
-# on:
-#   push:
-#     tags:
-#       - 'v*.*.*'
+on:
+  push:
+    tags:
+      - 'releases\v*.*.*'
+  workflow_dispatch:
 
 jobs:
   test_pypi_release:
@@ -38,7 +38,9 @@ jobs:
       id: source_version
       run: |
         ver=`cat osducli/__init__.py | grep __VERSION__ | sed s/' '//g | sed s/'__VERSION__='// |  sed s/\"//g`
-        echo $ver > $BUILD_STAGINGDIRECTORY/version
+        echo $ver
+        echo ::set-output name=SOURCE_VERSION::$ver
+        # echo $ver > $BUILD_STAGINGDIRECTORY/version
     # TO DO: - compare source and tag version
     - name: Branch name
       id: branch_name
@@ -51,17 +53,23 @@ jobs:
         echo $SOURCE_NAME
         echo $SOURCE_BRANCH
         echo $SOURCE_TAG
+        echo $SOURCE_VERSION
+        echo $ver
       env:
         SOURCE_NAME: ${{ steps.branch_name.outputs.SOURCE_NAME }}
         SOURCE_BRANCH: ${{ steps.branch_name.outputs.SOURCE_BRANCH }}
         SOURCE_TAG: ${{ steps.branch_name.outputs.SOURCE_TAG }}
+        SOURCE_VERSION: ${{ steps.source_version.outputs.SOURCE_VERSION }}
 
     - name: Check if tag version matches project version
       run: |
-        TAG=$(git describe HEAD --tags --abbrev=0)
+        # TAG=$(git describe HEAD --tags --abbrev=0)
         echo $TAG
+        echo $ver
         echo $PROJECT_VERSION
-        if [[ "$TAG" != "v$PROJECT_VERSION" ]]; then exit 1; fi
+        # if [[ "$TAG" != "v$PROJECT_VERSION" ]]; then exit 1; fi
+        if [[ "$TAG" != "v$PROJECT_VERSION" ]]; then echo "not equal"; fi
+        if [[ "$TAG" != "$PROJECT_VERSION" ]]; then echo "not equal 2"; fi
 
     # Upload to TestPyPI
     - name: Build and Upload to TestPyPI
