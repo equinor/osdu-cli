@@ -25,6 +25,7 @@ WELCOME_MESSAGE = r"""
 `___'[___/|___/ \__|
 
 Welcome to the OSDU CLI!
+Note: This is currently a work in progress. Please share ideas / issues on the git page.
 
 Use `osducli --version` to display the current version.
 
