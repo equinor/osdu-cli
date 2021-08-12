@@ -1,8 +1,9 @@
 # OSDU Command Line Interface (osducli)
 
 [![Build](https://github.com/equinor/osdu-cli/actions/workflows/build.yml/badge.svg)](https://github.com/equinor/osdu-cli/actions/workflows/build.yml)
-[![PyPi Version](https://img.shields.io/pypi/v/osducli.svg)](https://pypi.org/project/osducli/)
-[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/osducli.svg)](https://pypi.org/project/osducli/)
+[![License](https://img.shields.io/pypi/l/osducli.svg)](https://github.com/equinor/osdu-cli/blob/master/LICENSE)
+[![PyPi Version](https://img.shields.io/pypi/v/osducli.svg?color=informational)](https://pypi.org/project/osducli/)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/osducli.svg?color=informational)](https://pypi.org/project/osducli/)
 
 TODO: Other badges (coverage, ..)
 
