@@ -4,14 +4,13 @@
 [![License](https://img.shields.io/pypi/l/osducli.svg)](https://github.com/equinor/osdu-cli/blob/master/LICENSE)
 [![PyPi Version](https://img.shields.io/pypi/v/osducli.svg?color=informational)](https://pypi.org/project/osducli/)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/osducli.svg?color=informational)](https://pypi.org/project/osducli/)
-
-TODO: Other badges (coverage, ..)
+![Unknown coverage](https://img.shields.io/badge/coverage-%3F%3F%3F-important)
 
 Command-line interface for interacting with OSDU.
 
-![OSDU CLI](/documentation/osducli.png)
-
 :warning: Note that this is a work in progress and is not complete / might contain bugs.
+
+![OSDU CLI](/documentation/osducli.png)
 
 ## Installation
 
@@ -21,21 +20,11 @@ Usage requires that you have a valid python 3.7+ installation on your machine. Y
 
 For general usage this is the easiest and recommended method.
 
-:warning: Until deployed to PyPi this alternative won't work.
-
 ```bash
 pip install osducli
 ```
 
-### Alternative 2 - Deploy from local copy
-
-Download the contents of the repository and change into the root folder.
-
-```bash
-pip install .
-```
-
-### Alternative 3 - Developer setup
+### Alternative 2 - Developer setup
 
 For those wanting to modify the code. 
 See the
