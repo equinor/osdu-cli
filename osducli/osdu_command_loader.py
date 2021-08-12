@@ -31,6 +31,23 @@ def dont_order_columns_table_transformer(rows):
     return rows
 
 
+def unit_list_table_transformer(unit_list_json):
+    """Transform unit list json to table.
+
+    Args:
+        json ([type]): [description]
+
+    Returns:
+        [type]: [description]
+    """
+    rows = [OrderedDict([('DisplaySymbol', record['displaySymbol']),
+                         ('Name', record['name']),
+                         ('Source', record['source'])])
+            for record in unit_list_json['units']]
+
+    return rows
+
+
 class OsduCommandLoader(CLICommandsLoader):
     """OSDU CLI command loader, containing command mappings"""
 
@@ -60,7 +77,7 @@ class OsduCommandLoader(CLICommandsLoader):
             group.command('status', 'status', table_transformer=dont_order_columns_table_transformer)
 
         with CommandGroup(self, 'unit', self.command_group_module('unit')) as group:
-            group.command('list', 'unit_list', table_transformer=dont_order_columns_table_transformer)
+            group.command('list', 'unit_list', table_transformer=unit_list_table_transformer)
 
         with CommandGroup(self, '', self.command_group_module('version')) as group:
             group.command('version', 'version')
