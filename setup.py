@@ -65,6 +65,7 @@ setup(
             'pylint==2.7.2',
             'mock',
             'tox==3.24.1',
+            'testfixtures==6.18.0'
         ]
     },
     entry_points={

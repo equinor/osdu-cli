@@ -9,8 +9,10 @@ import sys
 from configparser import NoOptionError, NoSectionError
 from datetime import datetime
 from json import loads
+import requests
+from typing import Tuple
 from urllib.error import HTTPError
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urljoin
 from urllib.request import Request, urlopen
 from knack.log import get_logger
 
@@ -207,3 +209,36 @@ def get_headers() -> dict:
         "Authorization": f"Bearer {get_token()}",
         "correlation-id": correlation_id
     }
+
+
+def get_url(config_url_key: str, url_extra_path: str) -> dict:
+    """Get data from a url
+
+    Args:
+        config_url_key (str): key for the url in the config file
+        url_extra_path (str): extra path to add to the url
+
+    Returns:
+        dict: [description]
+    """
+    server = get_config_value('server', 'core')
+    unit_url = get_config_value(config_url_key, 'core')
+    url = urljoin(server, unit_url) + url_extra_path
+
+    headers = get_headers()
+    response = requests.get(url, headers=headers)
+    return response
+
+
+def get_url_as_json(config_url_key: str, url_extra_path: str) -> Tuple[requests.Response, dict]:
+    """Get data from the specified url in json format.
+
+    Args:
+        config_url_key (str): key for the url in the config file
+        url_extra_path (str): extra path to add to the url
+
+    Returns:
+        dict: [description]
+    """
+    response = get_url(config_url_key, url_extra_path)
+    return response, response.json()

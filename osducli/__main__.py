@@ -61,6 +61,9 @@ def main():
                           commands_loader_cls=OsduCommandLoader,
                           help_cls=OsduCommandHelp)
 
+        # osducli.register_event(OsduCli.events.EVENT_PARSER_GLOBAL_CREATE, lambda:  OutputProducer.on_global_arguments)
+        # osducli.register_event(OsduCli.events.EVENT_INVOKER_POST_PARSE_ARGS, OutputProducer.handle_output_argument)
+
         # is_help_cmd = is_help_command(args_list)
 
         exit_code = osducli.invoke(args_list)
