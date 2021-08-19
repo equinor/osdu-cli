@@ -4,12 +4,15 @@
 # license information.
 # -----------------------------------------------------------------------------
 
+
+"""Test cases for unit commands"""
+
 import logging
-from osducli.connection import CliOsduConnection
 from mock import patch
 from knack.testsdk import ScenarioTest
 from testfixtures import LogCapture
 from osducli.commands.unit.custom import unit_list
+from osducli.connection import CliOsduConnection
 
 
 class UnitTests(ScenarioTest):

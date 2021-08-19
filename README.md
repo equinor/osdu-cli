@@ -10,7 +10,7 @@ Command-line interface for interacting with OSDU.
 
 :warning: Note that this is a work in progress and is not complete / might contain bugs.
 
-![OSDU CLI](/documentation/osducli.png)
+![OSDU CLI](/docs/osducli.png)
 
 ## Installation
 

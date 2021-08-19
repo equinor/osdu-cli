@@ -32,10 +32,10 @@ class OsduConnection:
     Class for connecting with API's.
     """
     # def __init__(self, config, *args, **keywords):
-    def __init__(self, *args, **keywords):
+    def __init__(self):
         # self.__config = config
-        self.__args = args          # pylint: disable=W0238
-        self.__keywords = keywords  # pylint: disable=W0238
+        # self.__args = args
+        # self.__keywords = keywords
         self.__expire_date = 0
         self._id_token = None
         self._access_token = None
