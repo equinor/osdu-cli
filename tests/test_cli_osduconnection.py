@@ -16,15 +16,13 @@ from osducli.connection import CliOsduConnection
 from osducli.connection import MSG_JSON_DECODE_ERROR, MSG_HTTP_ERROR
 
 
-def mock_config_values(section, name, fallback):
+def mock_config_values(section, name, fallback=None):  # pylint: disable=W0613
     """Validate and mock config returns"""
-    if section != 'core':
-        raise ValueError(f'Cannot retrieve config section \'{section}\'')
+    # if section != 'core':
+    #     raise ValueError(f'Cannot retrieve config section \'{section}\'')
     if name == 'server':
-        return 'http://www.www.com/'
-    if name == 'unit_url':
-        return '/unit/'
-    return fallback
+        return 'https://dummy.com'
+    return f'{section}_{name}'
 
 
 MOCK_CONFIG = MagicMock()
@@ -49,13 +47,14 @@ class CliOsduConnectionTests(ScenarioTest):
     def __init__(self, method_name):
         super().__init__(None, method_name, filter_headers=['Authorization'])
         self.recording_processors = [self.name_replacer]
+        self.vcr.register_matcher('always', CliOsduConnectionTests._vcrpy_match_always)
+        self.vcr.match_on = ['always']
 
     # """Playground test for unit commands - some notes / examples"""
     # @patch('osducli.commands.unit.custom.get_as_json', side_effect=ValueError('ValueError'))
     # @patch('osducli.commands.unit.custom.get_url_as_json', autospec=True, return_value=(not_found_response_mock,None))
     #
     # @patch('osducli.commands.unit.custom.get_headers')
-    # @patch('osducli.config.CLIConfig', new=MOCK_CONFIG)
     # def test_unit_list(self, test_patch):
 
     #     # with patch('app.mocking.get_user_name', return_value = 'Mocked This Silly'):
@@ -64,12 +63,15 @@ class CliOsduConnectionTests(ScenarioTest):
 
     #     unit_list()
 
-    # If doing a new live test to get / refresh a recording then comment out the below patch and 
+    # If doing a new live test to get / refresh a recording then comment out the below patch and
     # after getting a recording delete any recording authentication interactions
     @patch.object(CliOsduConnection, 'get_headers', return_value={})
+    @patch('osducli.config.CLIConfig', new=MOCK_CONFIG)
     def test_cli_osdu_connection_cli_get_as_json(self, mock_get_headers):  # pylint: disable=W0613
         """Test valid response returns correct json"""
-        self.cassette.filter_headers=['Authorization']
+
+        self.cassette.filter_headers = ['Authorization']
+
         with LogCapture(level=logging.WARN) as log_capture:
             connection = CliOsduConnection()
             result = connection.cli_get_as_json('unit_url', 'unit?limit=3')
@@ -104,6 +106,11 @@ class CliOsduConnectionTests(ScenarioTest):
                     ('cli', 'ERROR', MSG_JSON_DECODE_ERROR)
                 )
             self.assertEqual(sysexit.exception.code, 1)
+
+    @classmethod
+    def _vcrpy_match_always(cls, url1, url2):  # pylint: disable=W0613
+        """ Return true always (only 1 query). """
+        return True
 
 
 if __name__ == '__main__':

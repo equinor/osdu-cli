@@ -8,11 +8,24 @@
 """Test cases for unit commands"""
 
 import logging
-from mock import patch
+from mock import MagicMock, patch
 from knack.testsdk import ScenarioTest
 from testfixtures import LogCapture
 from osducli.commands.unit.custom import unit_list
 from osducli.connection import CliOsduConnection
+
+
+def mock_config_values(section, name, fallback=None):  # pylint: disable=W0613
+    """Validate and mock config returns"""
+    # if section != 'core':
+    #     raise ValueError(f'Cannot retrieve config section \'{section}\'')
+    if name == 'server':
+        return 'https://dummy.com'
+    return f'{section}_{name}'
+
+
+MOCK_CONFIG = MagicMock()
+MOCK_CONFIG.return_value.get.side_effect = mock_config_values
 
 
 class UnitTests(ScenarioTest):
@@ -25,16 +38,22 @@ class UnitTests(ScenarioTest):
     def __init__(self, method_name):
         super().__init__(None, method_name, filter_headers=['Authorization'])
         self.recording_processors = [self.name_replacer]
-
+        self.vcr.register_matcher('always', UnitTests._vcrpy_match_always)
+        self.vcr.match_on = ['always']
 
     # If doing a new live test to get / refresh a recording then:
     # - Comment out the below patch and remove the get_headers parameter
     # - After getting a recording, delete any recording authentication interactions
+    # - Delete or obfuscate any other sensitive information.
     # - Adjust test case as necessary e.g. totalCount
     # - Add patch and parameter back
     @patch.object(CliOsduConnection, 'get_headers', return_value={})
+    @patch('osducli.config.CLIConfig', new=MOCK_CONFIG)
     def test_unit_list(self, get_headers):  # pylint: disable=W0613
         """Test for a successful response"""
+
+        self.cassette.filter_headers = ['Authorization']
+
         with LogCapture(level=logging.WARN) as log_capture:
             result = unit_list()
             assert isinstance(result, dict)
@@ -49,6 +68,11 @@ class UnitTests(ScenarioTest):
         with self.assertRaises(SystemExit) as sysexit:
             _ = unit_list()
             self.assertEqual(sysexit.exception.code, 1)
+
+    @classmethod
+    def _vcrpy_match_always(cls, url1, url2):  # pylint: disable=W0613
+        """ Return true always (only 1 query). """
+        return True
 
 
 if __name__ == '__main__':
