@@ -14,11 +14,11 @@ Command-line interface for interacting with OSDU.
 
 ## Installation
 
-Usage requires that you have a valid python 3.7+ installation on your machine. You might also consider creating a seperate python [virtual environment](https://docs.python.org/3/library/venv.html) for working with OSDU.
+Usage requires that you have a valid python 3.8+ installation on your machine. You might also consider creating a seperate python [virtual environment](https://docs.python.org/3/library/venv.html) for working with OSDU.
 
 ### Alternative 1 - Deploy from PyPi
 
-For general usage this is the easiest and recommended method.
+For general usage deploying from [PyPi](https://pypi.org/project/osducli/) is the easiest and recommended method.
 
 ```bash
 pip install osducli
