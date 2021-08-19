@@ -9,19 +9,19 @@ function launch_pylint()
 
 function launch_unit_tests()
 {
-    nose2 -v --with-coverage --coverage osducli
+    nose2 -v --with-coverage --coverage src
 }
 
 if [[ $1 == "local" ]]
     then
-        launch_unit_tests && launch_pylint ./osducli && launch_pylint ./scripts/license_verify_pylint
+        launch_unit_tests && launch_pylint ./src && launch_pylint ./scripts/license_verify_pylint
 elif [[ $1 == "test" ]]
     then
         launch_unit_tests
 elif [[ $1 == "lint" ]]
     then
         echo "Linting CLI..."
-        launch_pylint ./osducli
+        launch_pylint ./src
         r1=$?
         echo "Linting Checker..."
         launch_pylint ./scripts/license_verify_pylint

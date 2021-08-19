@@ -9,21 +9,23 @@ import configparser
 import os
 from knack.prompting import prompt, prompt_y_n, prompt_choice_list, prompt_pass
 from osducli.config import get_default_from_config
-from osducli.commands.configure.consts import (MSG_INTRO,
-                                               MSG_CLOSING,
-                                               MSG_GLOBAL_SETTINGS_LOCATION,
-                                               MSG_HEADING_CURRENT_CONFIG_INFO,
-                                               MSG_HEADING_ENV_VARS,
-                                               MSG_PROMPT_MANAGE_GLOBAL,
-                                               MSG_PROMPT_GLOBAL_OUTPUT,
-                                               OUTPUT_LIST,
-                                               MSG_PROMPT_SERVER,
-                                               MSG_PROMPT_SEARCH_URL,
-                                               MSG_PROMPT_TOKEN_ENDPOINT_URL,
-                                               MSG_PROMPT_DATA_PARTITION,
-                                               MSG_PROMPT_REFRESH_TOKEN,
-                                               MSG_PROMPT_CLIENT_ID,
-                                               MSG_PROMPT_CLIENT_SECRET)
+from osducli.state import set_default_config_file
+from osducli.commands.config.consts import (MSG_INTRO,
+                                            MSG_CLOSING,
+                                            MSG_GLOBAL_SETTINGS_LOCATION,
+                                            MSG_HEADING_CURRENT_CONFIG_INFO,
+                                            MSG_HEADING_ENV_VARS,
+                                            MSG_PROMPT_CONFIG,
+                                            MSG_PROMPT_MANAGE_GLOBAL,
+                                            MSG_PROMPT_GLOBAL_OUTPUT,
+                                            OUTPUT_LIST,
+                                            MSG_PROMPT_SERVER,
+                                            MSG_PROMPT_SEARCH_URL,
+                                            MSG_PROMPT_TOKEN_ENDPOINT_URL,
+                                            MSG_PROMPT_DATA_PARTITION,
+                                            MSG_PROMPT_REFRESH_TOKEN,
+                                            MSG_PROMPT_CLIENT_ID,
+                                            MSG_PROMPT_CLIENT_SECRET)
 
 answers = {}
 
@@ -91,12 +93,32 @@ def _handle_configuration(config):
             config.set_value('core', 'client_secret', client_secret)
 
 
-def configure(cmd):
+def update(cmd, key: str = None, value: str = None):
     """[summary]
 
     Args:
         cmd ([type]): [description]
     """
-    print(MSG_INTRO)
-    _handle_configuration(cmd.cli_ctx.config)
-    print(MSG_CLOSING)
+    if key is None:
+        print(MSG_INTRO)
+        _handle_configuration(cmd.cli_ctx.config)
+        print(MSG_CLOSING)
+    else:
+        print(f"Updating '{key}' only")
+        if value is None:
+            value = prompt('Enter the new value: ')
+        if value != '':
+            cmd.cli_ctx.config.set_value('core', key, value)
+        print("Done")
+
+
+def set_default(cmd):
+    """[summary]
+
+    Args:
+        cmd ([type]): [description]
+    """
+    print(MSG_GLOBAL_SETTINGS_LOCATION.format(cmd.cli_ctx.config.config_path))
+    config = prompt(MSG_PROMPT_CONFIG)
+    set_default_config_file(config)
+    print('\nDefault configuration updated')

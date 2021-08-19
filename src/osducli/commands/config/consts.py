@@ -4,7 +4,7 @@
 # license information.
 # -----------------------------------------------------------------------------
 
-"""Constants for configure commands"""
+"""Constants for config commands"""
 
 OUTPUT_LIST = [
     {'name': 'json', 'desc': 'JSON formatted output that most closely matches API responses.'},
@@ -16,7 +16,7 @@ OUTPUT_LIST = [
     {'name': 'none', 'desc': 'No output, except for errors and warnings.'}
 ]
 
-MSG_INTRO = '\nWelcome to the OSDU CLI! This command will guide you through logging in and ' \
+MSG_INTRO = '\nWelcome to the OSDU CLI! This command will guide you through ' \
             'setting some default values.\n'
 MSG_CLOSING = '\nYou\'re all set! Here are some commands to try:\n' \
               ' $ osducli login\n' \
@@ -27,6 +27,7 @@ MSG_GLOBAL_SETTINGS_LOCATION = 'Your settings can be found at {}'
 MSG_HEADING_CURRENT_CONFIG_INFO = 'Your current configuration is as follows:'
 MSG_HEADING_ENV_VARS = '\nEnvironment variables:'
 
+MSG_PROMPT_CONFIG = '\nWhat config file do you want to use as the default?'
 MSG_PROMPT_MANAGE_GLOBAL = '\nDo you wish to change your settings?'
 MSG_PROMPT_GLOBAL_OUTPUT = '\nWhat default output format would you like?'
 MSG_PROMPT_SERVER = '\nWhat is the OSDU API Server? '

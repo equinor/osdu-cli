@@ -64,8 +64,9 @@ class OsduCommandLoader(CLICommandsLoader):
             group.command('invoke-api', 'invoke_api')
             group.command('logs', 'logs')
 
-        with CommandGroup(self, '', 'osducli.commands.configure.custom#configure') as group:
-            group.command('configure', 'configure')
+        with CommandGroup(self, 'config', self.command_group_module('config')) as group:
+            group.command('update', 'update')
+            group.command('set-default', 'set_default')
         # with CommandGroup(self, '', self.command_group_module('configure')) as group:
         #     group.command('configure', 'configure')
 

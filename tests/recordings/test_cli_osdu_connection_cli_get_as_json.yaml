@@ -1,0 +1,67 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.26.0
+      correlation-id:
+      - workflow-create-0819-105841
+      data-partition-id:
+      - opendes
+    method: GET
+    uri: https://dev-api-osdu-equinor.westeurope.cloudapp.azure.com/api/unit/v3/unit?limit=3
+  response:
+    body:
+      string: '{"totalCount":3695,"offset":0,"units":[{"essence":{"abcd":null,"scaleOffset":{"scale":1.0,"offset":0.0},"symbol":"
+        ","baseMeasurement":{"ancestry":"Dimensionless","type":"UM"},"type":"USO"},"deprecationInfo":null,"displaySymbol":"
+        ","name":"dimensionless","description":null,"lastModified":"19920228","source":"APIRP661","namespace":"RP66","persistableReference":"{\"scaleOffset\":{\"scale\":1.0,\"offset\":0.0},\"symbol\":\"
+        \",\"baseMeasurement\":{\"ancestry\":\"Dimensionless\",\"type\":\"UM\"},\"type\":\"USO\"}"},{"essence":{"abcd":null,"scaleOffset":{"scale":0.0254,"offset":0.0},"symbol":"\"","baseMeasurement":{"ancestry":"Length","type":"UM"},"type":"USO"},"deprecationInfo":{"state":"identical","remarks":"inch","supersededByUnit":"{\"scaleOffset\":{\"scale\":0.0254,\"offset\":0.0},\"symbol\":\"in\",\"baseMeasurement\":{\"ancestry\":\"Length\",\"type\":\"UM\"},\"type\":\"USO\"}"},"displaySymbol":"\"","name":"inch","description":null,"lastModified":"19920228","source":"","namespace":"LIS","persistableReference":"{\"scaleOffset\":{\"scale\":0.0254,\"offset\":0.0},\"symbol\":\"\\\"\",\"baseMeasurement\":{\"ancestry\":\"Length\",\"type\":\"UM\"},\"type\":\"USO\"}"},{"essence":{"abcd":null,"scaleOffset":{"scale":1.488163943569554,"offset":0.0},"symbol":"#/FT","baseMeasurement":{"ancestry":"Mass_Per_Length","type":"UM"},"type":"USO"},"deprecationInfo":{"state":"identical","remarks":"pound
+        mass per foot","supersededByUnit":"{\"scaleOffset\":{\"scale\":1.488163943569554,\"offset\":0.0},\"symbol\":\"lbm/ft\",\"baseMeasurement\":{\"ancestry\":\"Mass_Per_Length\",\"type\":\"UM\"},\"type\":\"USO\"}"},"displaySymbol":"#/FT","name":"pound
+        mass per foot","description":null,"lastModified":"19941008","source":"LOGDB","namespace":"LIS","persistableReference":"{\"scaleOffset\":{\"scale\":1.488163943569554,\"offset\":0.0},\"symbol\":\"#/FT\",\"baseMeasurement\":{\"ancestry\":\"Mass_Per_Length\",\"type\":\"UM\"},\"type\":\"USO\"}"}],"measurements":[],"unitMapItems":[],"measurementMapItems":[],"mapStates":[],"count":3}'
+    headers:
+      cache-control:
+      - no-cache, no-store, max-age=0, must-revalidate
+      connection:
+      - keep-alive
+      content-type:
+      - application/json
+      correlation-id:
+      - workflow-create-0819-105841
+      date:
+      - Thu, 19 Aug 2021 08:58:42 GMT
+      expires:
+      - '0'
+      pragma:
+      - no-cache
+      request-context:
+      - appId=cid-v1:c1997c1a-5f9b-45d2-847e-3a95f0e733e0
+      server:
+      - istio-envoy
+      strict-transport-security:
+      - max-age=31536000 ; includeSubDomains
+      transfer-encoding:
+      - chunked
+      vary:
+      - Origin,Access-Control-Request-Method,Access-Control-Request-Headers
+      x-content-type-options:
+      - nosniff
+      x-envoy-decorator-operation:
+      - unit.osdu-azure.svc.cluster.local:80/*
+      x-envoy-upstream-service-time:
+      - '88'
+      x-frame-options:
+      - DENY
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+version: 1
