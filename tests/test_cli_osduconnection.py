@@ -47,7 +47,7 @@ class CliOsduConnectionTests(ScenarioTest):
     #     return True
 
     def __init__(self, method_name):
-        super(CliOsduConnectionTests, self).__init__(None, method_name)
+        super().__init__(None, method_name, filter_headers=['Authorization'])
         self.recording_processors = [self.name_replacer]
 
     # """Playground test for unit commands - some notes / examples"""
@@ -64,8 +64,12 @@ class CliOsduConnectionTests(ScenarioTest):
 
     #     unit_list()
 
-    def test_cli_osdu_connection_cli_get_as_json(self):
+    # If doing a new live test to get / refresh a recording then comment out the below patch and 
+    # after getting a recording delete any recording authentication interactions
+    @patch.object(CliOsduConnection, 'get_headers', return_value={})
+    def test_cli_osdu_connection_cli_get_as_json(self, mock_get_headers):  # pylint: disable=W0613
         """Test valid response returns correct json"""
+        self.cassette.filter_headers=['Authorization']
         with LogCapture(level=logging.WARN) as log_capture:
             connection = CliOsduConnection()
             result = connection.cli_get_as_json('unit_url', 'unit?limit=3')
