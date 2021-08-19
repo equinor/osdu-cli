@@ -183,7 +183,7 @@ class HelpTextTests(unittest.TestCase):
             # Call the provided command in command line
             # Do not split the help_command, as that breaks behavior:
             # Linux ignores the splits and takes only the first.
-
+            # pylint: disable=R1732
             pipe = Popen(help_command, shell=True, stdout=PIPE, stderr=PIPE)
             # returned_string and err are returned as bytes
             (returned_string, err) = pipe.communicate()
@@ -278,12 +278,16 @@ class HelpTextTests(unittest.TestCase):
 
         self.validate_output(
             'osducli',
-            subgroups=('bulkload', 'list', 'unit'),
-            commands=('configure', 'status', 'version'))
+            subgroups=('bulkload', 'config', 'list', 'unit'),
+            commands=('status', 'version'))
 
         self.validate_output(
             'osducli bulkload',
             commands=('invoke-api', 'logs'))
+
+        self.validate_output(
+            'osducli config',
+            commands=('set-default', 'update'))
 
         self.validate_output(
             'osducli list',
@@ -292,10 +296,6 @@ class HelpTextTests(unittest.TestCase):
         self.validate_output(
             'osducli unit',
             commands=('list',))
-
-        self.validate_output(
-            'osducli configure',
-            commands=())
 
         self.validate_output(
             'osducli status',

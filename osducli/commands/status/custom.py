@@ -6,13 +6,14 @@
 
 """Code to handle status commands"""
 
-from collections import OrderedDict
 from configparser import NoSectionError, NoOptionError
 from urllib.parse import urljoin
+
 import requests
+from knack.commands import CLICommand
 from knack.log import get_logger
-from osducli.connection import get_headers
-from osducli.config import get_config_value
+
+from osducli.connection import OsduConnection
 
 logger = get_logger(__name__)
 
@@ -23,34 +24,29 @@ def _get_status(server, api, path, headers):
     return response.status_code, response.reason
 
 
-def status():
+def status(cmd: CLICommand):   # pylint: disable=unused-argument
     """status command entry point
 
     Returns:
         [type]: [description]
     """
-    headers = get_headers()
+    connection = OsduConnection()
 
-    services = []
     try:
-        server = get_config_value('server', 'core')
+        response = connection.get('search_url', 'health/readiness_check')
+        print(f"Search service         {response.status_code}\t {response.reason}")
 
-        code, reason = _get_status(server, get_config_value('search_url', 'core'), 'health/readiness_check', headers)
-        services.append(OrderedDict([('Service', 'Search service'), ('Code', code), ('Reason', reason)]))
+        response = connection.get('schema_url', 'schema?limit=1')
+        print(f"Schema service         {response.status_code}\t {response.reason}")
 
-        code, reason = _get_status(server, get_config_value('schema_url', 'core'), 'schema?limit=1', headers)
-        services.append(OrderedDict([('Service', 'Schema service'), ('Code', code), ('Reason', reason)]))
+        response = connection.get('workflow_url', 'readiness_check')
+        print(f"Workflow service       {response.status_code}\t {response.reason}")
 
-        code, reason = _get_status(server, get_config_value('workflow_url', 'core'), 'readiness_check', headers)
-        services.append(OrderedDict([('Service', 'Workflow service'), ('Code', code), ('Reason', reason)]))
+        response = connection.get('storage_url', 'health')
+        print(f"Storage service        {response.status_code}\t {response.reason}")
 
-        code, reason = _get_status(server, get_config_value('storage_url', 'core'), 'health', headers)
-        services.append(OrderedDict([('Service', 'Storage service'), ('Code', code), ('Reason', reason)]))
-
-        code, reason = _get_status(server, get_config_value('file_url', 'core'), 'readiness_check', headers)
-        services.append(OrderedDict([('Service', 'File service'), ('Code', code), ('Reason', reason)]))
+        response = connection.get('file_url', 'readiness_check')
+        print(f"File service           {response.status_code}\t {response.reason}")
 
     except (IndexError, NoSectionError, NoOptionError) as ex:
         logger.error("'%s' missing from configuration. Run osducli configure or add manually", ex.args[0])
-
-    return services

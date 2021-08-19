@@ -7,10 +7,7 @@
 """Custom cluster upgrade specific commands"""
 from collections import OrderedDict
 import json
-from urllib.parse import urljoin
-import requests
-from osducli.connection import get_headers
-from osducli.config import get_config_value
+from osducli.connection import OsduConnection
 
 
 def records():
@@ -19,7 +16,6 @@ def records():
     Args:
         timeout (int, optional): [description]. Defaults to 60.
     """
-    headers = get_headers()
     request_data = {
         "kind": "*:*:*:*",
         "limit": 1,
@@ -27,18 +23,11 @@ def records():
         "aggregateBy": "kind"
     }
 
-    server = get_config_value('server', 'core')
-    search_url = get_config_value('search_url', 'core')
-    url = urljoin(server, search_url) + 'query'
-    response = requests.post(url,
-                             json.dumps(request_data),
-                             headers=headers)
-
-    search_response = response.json()
-    # print(json.dumps(search_response, indent=2))
+    connection = OsduConnection()
+    _, json_response = connection.post_as_json('search_url', 'query', json.dumps(request_data))
 
     services = [OrderedDict([('Kind', record['key']), ('Count', record['count'])])
-                for record in search_response['aggregations']]
+                for record in json_response['aggregations']]
     return services
 
 

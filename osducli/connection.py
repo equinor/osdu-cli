@@ -9,135 +9,81 @@ import sys
 from configparser import NoOptionError, NoSectionError
 from datetime import datetime
 from json import loads
-import requests
 from typing import Tuple
 from urllib.error import HTTPError
 from urllib.parse import urlencode, urljoin
 from urllib.request import Request, urlopen
+
+import requests
 from knack.log import get_logger
 
 from osducli.config import get_config_int, get_config_value
 
+MSG_JSON_DECODE_ERROR = 'Unable to decode the response. Try running again with the --debug command line argument for'\
+                        ' more information'
+MSG_HTTP_ERROR = 'Unable to access the api. Try running again with the --debug command line argument for'\
+                 ' more information'
+
 logger = get_logger(__name__)
 
 
-#  pylint: disable=R0903
-class ClassProperty:
+class OsduConnection:
     """
-    Decorator that allows get methods like class properties.
+    Class for connecting with API's.
     """
+    # def __init__(self, config, *args, **keywords):
+    def __init__(self, *args, **keywords):
+        # self.__config = config
+        self.__args = args          # pylint: disable=W0238
+        self.__keywords = keywords  # pylint: disable=W0238
+        self.__expire_date = 0
+        self._id_token = None
+        self._access_token = None
 
-    def __init__(self, fget):
-        self.fget = fget
+        try:
+            self._retries = get_config_int("retries", "core", 2)
+            self._token_endpoint = get_config_value("token_endpoint", "core")
+            self._refresh_token = get_config_value("REFRESH_TOKEN", "core")
+            self._client_id = get_config_value("CLIENT_ID", "core")
+            self._client_secret = get_config_value("CLIENT_SECRET", "core")
+        except (NoOptionError, NoSectionError) as ex:
+            logger.warning("'%s' missing from configuration. Run osducli configure", ex.args[0])
+            sys.exit(1)
 
-    def __get__(self, owner_self, owner_cls):
-        return self.fget(owner_cls)
-
-
-classproperty = ClassProperty  # pylint: disable=C0103
-
-
-class TokenManager:
-    """
-    Class for token managing.
-
-    Simple usage:
-    print(TokenManager.id_token)
-    print(TokenManager.access_token)
-
-    Requires dataload.ini with:
-    [core]
-    token_endpoint = <token_endpoint_url>
-    retries = <retries_count>
-
-    Requires "REFRESH_TOKEN", "CLIENT_ID", "CLIENT_SECRET" in environment variables
-    """
-    expire_date = 0
-
-    try:
-        _retries = get_config_int("retries", "core", 2)
-        _token_endpoint = get_config_value("token_endpoint", "core")
-        _refresh_token = get_config_value("REFRESH_TOKEN", "core")
-        _client_id = get_config_value("CLIENT_ID", "core")
-        _client_secret = get_config_value("CLIENT_SECRET", "core")
-    except (NoOptionError, NoSectionError):  # as ex:
-        pass
-        # logger.warn("'%s' missing from configuration. Run osducli configure", ex.args[0])
-        # sys.exit(0)
-
-    # @staticmethod
-    # def _token_endpoint():  # pylint: disable=E0213
-    #     """ Lazy load of token endpoint """
-    #     try:
-    #         return get_config_value("token_endpoint", "core")
-    #     except (NoOptionError, NoSectionError) as ex:
-    #         logger.error("'%s' missing from configuration. Run osducli configure", ex.args[0])
-    #         sys.exit(0)
-
-    # @staticmethod
-    # def _refresh_token():  # pylint: disable=E0213
-    #     """ Lazy load of refresh token """
-    #     try:
-    #         return get_config_value("REFRESH_TOKEN", "core")
-    #     except (NoOptionError, NoSectionError) as ex:
-    #         logger.error("'%s' missing from configuration. Run osducli configure", ex.args[0])
-    #         sys.exit(0)
-
-    # @staticmethod
-    # def _client_id():  # pylint: disable=E0213
-    #     """ Lazy load of client id """
-    #     try:
-    #         return get_config_value("CLIENT_ID", "core")
-    #     except (NoOptionError, NoSectionError) as ex:
-    #         logger.error("'%s' missing from configuration. Run osducli configure", ex.args[0])
-    #         sys.exit(0)
-
-    # @staticmethod
-    # def _client_secret():  # pylint: disable=E0213
-    #     """ Lazy load of client secret """
-    #     try:
-    #         return get_config_value("CLIENT_SECRET", "core")
-    #     except (NoOptionError, NoSectionError) as ex:
-    #         logger.error("'%s' missing from configuration. Run osducli configure", ex.args[0])
-    #         sys.exit(0)
-
-    @classproperty
-    def id_token(cls):  # pylint: disable=E0213
+    def id_token(self):  # pylint: disable=E0213
         """
         Check expiration date and return id_token.
         """
-        if datetime.now().timestamp() > cls.expire_date:
-            cls.refresh()
-        return cls._id_token
+        if datetime.now().timestamp() > self.__expire_date:
+            self.refresh()
+        return self._id_token
 
-    @classproperty
-    def access_token(cls):  # pylint: disable=E0213
+    def access_token(self):  # pylint: disable=E0213
         """
         Check expiration date and return access_token.
         """
-        if datetime.now().timestamp() > cls.expire_date:
-            cls.refresh()
-        return cls._access_token
+        if datetime.now().timestamp() > self.__expire_date:
+            self.refresh()
+        return self._access_token
 
-    @classmethod
-    def refresh(cls):
+    def refresh(self):
         """
         Refresh token and save them into class.
         """
         logger.info("Refreshing token.")
 
-        for i in range(cls._retries):
+        for i in range(self._retries):
             # try several times if there any error
             try:
-                resp = cls.refresh_request(
-                    cls._token_endpoint, cls._refresh_token, cls._client_id, cls._client_secret)
+                resp = self.refresh_request(
+                    self._token_endpoint, self._refresh_token, self._client_id, self._client_secret)
             except HTTPError:
-                if i == cls._retries - 1:
+                if i == self._retries - 1:
                     # too many errors, raise original exception
                     raise
-        cls._id_token = resp["id_token"]
-        cls._access_token = resp["access_token"]
-        cls.expire_date = datetime.now().timestamp() + resp["expires_in"]
+        self._id_token = resp["id_token"]
+        self._access_token = resp["access_token"]
+        self.__expire_date = datetime.now().timestamp() + resp["expires_in"]
 
         logger.info("Token is refreshed.")
 
@@ -170,75 +116,128 @@ class TokenManager:
             logger.error("Refresh token request failed. %s %s", code, message)
             raise
 
+    def get_token(self) -> str:
+        """
+        Refresh access or id token depending on config settings.
 
-def get_token() -> str:
-    """
-    Refresh access or id token depending on config settings.
+        :param RawConfigParser config: config that is used in calling module
+        :return: token of requested type
+        :rtype: str
+        """
+        token_type = get_config_value("token_type", "core")
 
-    :param RawConfigParser config: config that is used in calling module
-    :return: token of requested type
-    :rtype: str
-    """
-    token_type = get_config_value("token_type", "core")
+        tokens_dict = {
+            "access_token": self.access_token(),
+            "id_token": self.id_token()
+        }
 
-    tokens_dict = {
-        "access_token": TokenManager.access_token,
-        "id_token": TokenManager.id_token
-    }
+        if token_type not in tokens_dict.keys():
+            logger.error("Unknown type of token %s. Set correct token type in config file.", token_type)
+            sys.exit(2)
 
-    if token_type not in tokens_dict.keys():
-        logger.error("Unknown type of token %s. Set correct token type in config file.", token_type)
-        sys.exit(2)
+        return tokens_dict.get(token_type)
 
-    return tokens_dict.get(token_type)
+    def get_headers(self) -> dict:
+        """
+        Get request headers.
+
+        :param RawConfigParser config: config that is used in calling module
+        :return: dictionary with headers required for requests
+        :rtype: dict
+        """
+        correlation_id = 'workflow-create-%s' % datetime.now().strftime('%m%d-%H%M%S')
+
+        return {
+            "Content-Type": "application/json",
+            "data-partition-id": get_config_value("data-partition-id", "core"),
+            "Authorization": f"Bearer {self.get_token()}",
+            "correlation-id": correlation_id
+        }
+
+    def get(self, config_url_key: str, url_extra_path: str) -> requests.Response:
+        """Get data from a url
+
+        Args:
+            config_url_key (str): key for the url in the config file
+            url_extra_path (str): extra path to add to the url
+
+        Returns:
+            requests.Response: [description]
+        """
+        server = get_config_value('server', 'core')
+        unit_url = get_config_value(config_url_key, 'core')
+        url = urljoin(server, unit_url) + url_extra_path
+
+        headers = self.get_headers()
+        response = requests.get(url, headers=headers)
+        return response
+
+    def get_as_json(self, config_url_key: str, url_extra_path: str) -> Tuple[requests.Response, dict]:
+        """Get data from the specified url in json format.
+
+        Args:
+            config_url_key (str): key for the url in the config file
+            url_extra_path (str): extra path to add to the url
+
+        Returns:
+            dict: [description]
+        """
+        response = self.get(config_url_key, url_extra_path)
+        return response, response.json()
+
+    def post(self, config_url_key: str, url_extra_path: str, data: str) -> requests.Response:
+        """Post data to a url
+
+        Args:
+            config_url_key (str): key for the url in the config file
+            url_extra_path (str): extra path to add to the url
+
+        Returns:
+            requests.Response: [description]
+        """
+        server = get_config_value('server', 'core')
+        unit_url = get_config_value(config_url_key, 'core')
+        url = urljoin(server, unit_url) + url_extra_path
+
+        headers = self.get_headers()
+        response = requests.post(url, data, headers=headers)
+        return response
+
+    def post_as_json(self, config_url_key: str, url_extra_path: str, data: str) -> Tuple[requests.Response, dict]:
+        """Post data to the specified url and get the result in json format.
+
+        Args:
+            config_url_key (str): key for the url in the config file
+            url_extra_path (str): extra path to add to the url
+
+        Returns:
+            dict: [description]
+        """
+        response = self.post(config_url_key, url_extra_path, data)
+        return response, response.json()
 
 
-def get_headers() -> dict:
-    """
-    Get request headers.
-
-    :param RawConfigParser config: config that is used in calling module
-    :return: dictionary with headers required for requests
-    :rtype: dict
-    """
-    correlation_id = 'workflow-create-%s' % datetime.now().strftime('%m%d-%H%M%S')
-
-    return {
-        "Content-Type": "application/json",
-        "data-partition-id": get_config_value("data-partition-id", "core"),
-        "Authorization": f"Bearer {get_token()}",
-        "correlation-id": correlation_id
-    }
-
-
-def get_url(config_url_key: str, url_extra_path: str) -> dict:
-    """Get data from a url
+class CliOsduConnection(OsduConnection):
+    """Specific class for use from the CLI that provides common error handling and messaging
 
     Args:
-        config_url_key (str): key for the url in the config file
-        url_extra_path (str): extra path to add to the url
-
-    Returns:
-        dict: [description]
+        OsduConnection ([type]): [description]
     """
-    server = get_config_value('server', 'core')
-    unit_url = get_config_value(config_url_key, 'core')
-    url = urljoin(server, unit_url) + url_extra_path
+    def cli_get_as_json(self, config_url_key: str, url_extra_path: str) -> dict:
+        """[summary]
 
-    headers = get_headers()
-    response = requests.get(url, headers=headers)
-    return response
+        Args:
+            timeout (int, optional): [description]. Defaults to 60.
+        """
+        try:
+            response, json = self.get_as_json(config_url_key, url_extra_path)
+            if response.status_code in [200]:
+                return json
 
+            logger.error(MSG_HTTP_ERROR)
+            logger.error("Error (%s) - %s", response.status_code, response.reason)
+        except ValueError as ex:
+            logger.error(MSG_JSON_DECODE_ERROR)
+            logger.debug(ex)
 
-def get_url_as_json(config_url_key: str, url_extra_path: str) -> Tuple[requests.Response, dict]:
-    """Get data from the specified url in json format.
-
-    Args:
-        config_url_key (str): key for the url in the config file
-        url_extra_path (str): extra path to add to the url
-
-    Returns:
-        dict: [description]
-    """
-    response = get_url(config_url_key, url_extra_path)
-    return response, response.json()
+        sys.exit(1)

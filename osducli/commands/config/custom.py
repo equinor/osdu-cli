@@ -9,7 +9,7 @@ import configparser
 import os
 from knack.prompting import prompt, prompt_y_n, prompt_choice_list, prompt_pass
 from osducli.config import get_default_from_config
-from osducli.state import get_default_config_file, set_default_config_file
+from osducli.state import set_default_config_file
 from osducli.commands.config.consts import (MSG_INTRO,
                                             MSG_CLOSING,
                                             MSG_GLOBAL_SETTINGS_LOCATION,

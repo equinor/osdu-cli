@@ -61,6 +61,8 @@ def get_default_config_file():
 
     Return None if the value does not exist in state"""
 
+    # pylint: disable= protected-access
+    # TO DO Fix properly
     return get_state_value('default_config', CLIConfig._DEFAULT_CONFIG_FILE_NAME)
 
 

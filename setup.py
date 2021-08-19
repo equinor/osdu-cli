@@ -56,18 +56,6 @@ setup(
         "joblib",
         "tqdm"
     ],
-    extras_require={
-        'test': [
-            'docutils==0.17.1',
-            'flake8==3.9.2',
-            'mock==4.0.3',
-            'nose2==0.10.0',
-            'pylint==2.7.2',
-            'mock',
-            'tox==3.24.1',
-            'testfixtures==6.18.0'
-        ]
-    },
     entry_points={
         'console_scripts': ['osducli=osducli.__main__:main']
     }
