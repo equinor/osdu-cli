@@ -17,21 +17,9 @@ from knack.help_files import helps
 #    1. text
 #    2. text
 
-helps['bulkload'] = """
+helps['dataload'] = """
     type: command
-    short-summary: Bulk loading of files.
-    parameters:
-        - name: --node-name
-          type: string
-          short-summary: The name of the node.
-        - name: --tags
-          type: string
-          short-summary: CSV list of tags to be added, i.e tagA,tagB,tagC
-"""
-
-helps['bulkload add-node-tags'] = """
-    type: command
-    short-summary: Add a list of tags to a node.
+    short-summary: Loading of files.
     parameters:
         - name: --node-name
           type: string

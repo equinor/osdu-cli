@@ -60,19 +60,18 @@ class OsduCommandLoader(CLICommandsLoader):
     def load_command_table(self, args):  # pylint: disable=too-many-statements
         """Load all OSDU commands"""
 
-        with CommandGroup(self, 'bulkload', self.command_group_module('bulkload')) as group:
-            group.command('invoke-api', 'invoke_api')
-            group.command('logs', 'logs')
+        with CommandGroup(self, 'dataload', self.command_group_module('dataload')) as group:
+            group.command('ingest', 'ingest')
+            group.command('listworkflows', 'list_workflows')
+            group.command('status', 'status')
+            group.command('verify', 'verify')
 
         with CommandGroup(self, 'config', self.command_group_module('config')) as group:
             group.command('update', 'update')
             group.command('set-default', 'set_default')
-        # with CommandGroup(self, '', self.command_group_module('configure')) as group:
-        #     group.command('configure', 'configure')
 
         with CommandGroup(self, 'list', self.command_group_module('list')) as group:
             group.command('records', 'records', table_transformer=dont_order_columns_table_transformer)
-            group.command('upgrade-update', 'upgrade_update')
 
         with CommandGroup(self, '', 'osducli.commands.status.custom#status') as group:
             group.command('status', 'status', table_transformer=dont_order_columns_table_transformer)
@@ -90,6 +89,28 @@ class OsduCommandLoader(CLICommandsLoader):
 
         with ArgumentsContext(self, '') as arg_context:  # Global argument
             arg_context.argument('timeout', type=int, options_list=('-t', '--timeout'))
+
+        with ArgumentsContext(self, 'dataload ingest') as arg_context:
+            arg_context.argument('path', type=str, options_list=('-p', '--path'),
+                                 help='Path to a file or folder containing manifests to upload.')
+            arg_context.argument('batch_size', type=str, options_list=('-b', '--batch'),
+                                 help='Batch size')
+            arg_context.argument('runid_log', type=str, options_list=('-rl', '--runid-log'),
+                                 help='Path of file to record returned run ids')
+
+        with ArgumentsContext(self, 'dataload status') as arg_context:
+            arg_context.argument('runid', type=str, options_list=('-r', '--runid'),
+                                 help='Runid to query status of.', required=False)
+            arg_context.argument('runid_log', type=str, options_list=('-rl', '--runid-log'),
+                                 help='Path to a file containing run ids to get status of (see dataload ingest -h).')
+            arg_context.argument('wait', action='store_true', options_list=('--wait', '-w'),
+                                 help='Whether to wait for runs to complete')
+
+        with ArgumentsContext(self, 'dataload verify') as arg_context:
+            arg_context.argument('path', type=str, options_list=('-p', '--path'),
+                                 help='Path to a file containing run ids to get status of (see dataload ingest -h).')
+            arg_context.argument('batch_size', type=str, options_list=('-b', '--batch'),
+                                 help='Batch size')
 
         # When the options_list is provided either for this timeout or the global timeout, the text
         # in the help file is ignored, so we are putting the help text here instead.

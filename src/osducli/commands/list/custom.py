@@ -6,8 +6,8 @@
 
 """Custom cluster upgrade specific commands"""
 from collections import OrderedDict
-import json
-from osducli.connection import OsduConnection
+from osducli.connection import CliOsduConnection
+from osducli.config import CONFIG_SEARCH_URL
 
 
 def records():
@@ -23,21 +23,9 @@ def records():
         "aggregateBy": "kind"
     }
 
-    connection = OsduConnection()
-    _, json_response = connection.post_as_json('search_url', 'query', json.dumps(request_data))
+    connection = CliOsduConnection()
+    json_response = connection.cli_post_json_returning_json(CONFIG_SEARCH_URL, 'query', request_data)
 
     services = [OrderedDict([('Kind', record['key']), ('Count', record['count'])])
                 for record in json_response['aggregations']]
     return services
-
-
-def upgrade_update(min_node_count, max_node_count, timeout=60):
-    """[summary]
-
-    Args:
-        min_node_count ([type]): [description]
-        max_node_count ([type]): [description]
-        timeout (int, optional): [description]. Defaults to 60.
-    """
-    print("NOT IMPLEMENTED - DUMMY CODE / NOT VALID CALL")
-    print(f"Upgrade:min_node_count {min_node_count}, max_node_count {max_node_count}, timeout{timeout}")

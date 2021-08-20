@@ -278,20 +278,20 @@ class HelpTextTests(unittest.TestCase):
 
         self.validate_output(
             'osducli',
-            subgroups=('bulkload', 'config', 'list', 'unit'),
+            subgroups=('config', 'dataload', 'list', 'unit'),
             commands=('status', 'version'))
-
-        self.validate_output(
-            'osducli bulkload',
-            commands=('invoke-api', 'logs'))
 
         self.validate_output(
             'osducli config',
             commands=('set-default', 'update'))
 
         self.validate_output(
+            'osducli dataload',
+            commands=('ingest', 'listworkflows', 'status', 'verify'))
+
+        self.validate_output(
             'osducli list',
-            commands=('records', 'upgrade-update'))
+            commands=('records',))
 
         self.validate_output(
             'osducli unit',

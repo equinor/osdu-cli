@@ -59,7 +59,7 @@ setup(
         'msrest>=0.5.0',
         'msrestazure',
         'requests',
-        'adal',
+        'msal',
         'psutil',
         'portalocker',
         'six',

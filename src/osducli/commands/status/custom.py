@@ -7,21 +7,19 @@
 """Code to handle status commands"""
 
 from configparser import NoSectionError, NoOptionError
-from urllib.parse import urljoin
 
-import requests
 from knack.commands import CLICommand
 from knack.log import get_logger
 
+from osducli.config import (CONFIG_FILE_URL,
+                            CONFIG_SCHEMA_URL,
+                            CONFIG_SEARCH_URL,
+                            CONFIG_STORAGE_URL,
+                            CONFIG_UNIT_URL,
+                            CONFIG_WORKFLOW_URL)
 from osducli.connection import OsduConnection
 
 logger = get_logger(__name__)
-
-
-def _get_status(server, api, path, headers):
-    url = urljoin(server, api) + path
-    response = requests.get(url, headers=headers)
-    return response.status_code, response.reason
 
 
 def status(cmd: CLICommand):   # pylint: disable=unused-argument
@@ -33,20 +31,23 @@ def status(cmd: CLICommand):   # pylint: disable=unused-argument
     connection = OsduConnection()
 
     try:
-        response = connection.get('search_url', 'health/readiness_check')
-        print(f"Search service         {response.status_code}\t {response.reason}")
+        response = connection.get(CONFIG_FILE_URL, 'readiness_check')
+        print(f"File service           {response.status_code}\t {response.reason}")
 
-        response = connection.get('schema_url', 'schema?limit=1')
+        response = connection.get(CONFIG_SCHEMA_URL, 'schema?limit=1')
         print(f"Schema service         {response.status_code}\t {response.reason}")
 
-        response = connection.get('workflow_url', 'readiness_check')
-        print(f"Workflow service       {response.status_code}\t {response.reason}")
+        response = connection.get(CONFIG_SEARCH_URL, 'health/readiness_check')
+        print(f"Search service         {response.status_code}\t {response.reason}")
 
-        response = connection.get('storage_url', 'health')
+        response = connection.get(CONFIG_STORAGE_URL, 'health')
         print(f"Storage service        {response.status_code}\t {response.reason}")
 
-        response = connection.get('file_url', 'readiness_check')
-        print(f"File service           {response.status_code}\t {response.reason}")
+        response = connection.get(CONFIG_UNIT_URL, '../_ah/readiness_check')
+        print(f"Unit service           {response.status_code}\t {response.reason}")
+
+        response = connection.get(CONFIG_WORKFLOW_URL, '../readiness_check')
+        print(f"Workflow service       {response.status_code}\t {response.reason}")
 
     except (IndexError, NoSectionError, NoOptionError) as ex:
         logger.error("'%s' missing from configuration. Run osducli configure or add manually", ex.args[0])
