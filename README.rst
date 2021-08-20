@@ -3,14 +3,27 @@
 
 Command-line interface for interacting with OSDU.
 
-Invocation
-==========
+Usage
+=====
 
-To get started, after installation run the following:
+The first time you use the CLI you should run the configure command to provide connection information and other important configuration.
+
+.. code-block:: bash
+
+  osducli config update
+
+Once configured use the CLI as shown below. Omitting a command will display a list of available options.
+
+.. code-block:: bash
+
+  osducli <command>
+
+For more information, specify the `-h` flag:
 
 .. code-block:: bash
 
   osducli -h
+  osducli <command> -h
 
 Change Log
 ==========
