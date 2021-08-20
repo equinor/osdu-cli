@@ -65,7 +65,8 @@ class OsduConnection:
             self._auth_authority = get_config_value(CONFIG_AUTHENTICATION_AUTHORITY, "core", None)
             self._auth_scopes = get_config_value(CONFIG_AUTHENTICATION_SCOPES, "core", None)
         except (NoOptionError, NoSectionError) as ex:
-            logger.warning("Authentication information missing from configuration ('%s'). Run 'osducli config update'", ex.args[0])
+            logger.warning(
+                "Authentication information missing from config ('%s'). Run 'osducli config update'", ex.args[0])
             sys.exit(1)
 
     def id_token(self):  # pylint: disable=E0213
