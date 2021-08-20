@@ -17,8 +17,28 @@ SF_CLI_NAME = 'osducli'
 SF_CLI_CONFIG_DIR = os.path.expanduser(os.path.join('~', '.{0}'.format(SF_CLI_NAME)))
 SF_CLI_ENV_VAR_PREFIX = SF_CLI_NAME
 
-# How often to check osducli version and cluster version for compatibility with each other (in hours).
-SF_CLI_VERSION_CHECK_INTERVAL = 24
+CONFIG_SERVER = 'server'
+CONFIG_FILE_URL = 'file-url'
+CONFIG_SCHEMA_URL = 'schema-url'
+CONFIG_SEARCH_URL = 'search-url'
+CONFIG_STORAGE_URL = 'storage-url'
+CONFIG_UNIT_URL = 'unit-url'
+CONFIG_WORKFLOW_URL = 'workflow-url'
+
+CONFIG_DATA_PARTITION_ID = 'data-partition-id'
+CONFIG_LEGAL_TAG = 'legal-tag'
+CONFIG_ACL_VIEWER = 'acl-viewer'
+CONFIG_ACL_OWNER = 'acl-owner'
+
+CONFIG_AUTHENTICATION_MODE = 'authentication-mode'
+
+CONFIG_AUTHENTICATION_AUTHORITY = 'authority'
+CONFIG_AUTHENTICATION_SCOPES = 'scopes'
+
+CONFIG_TOKEN_ENDPOINT = 'token-endpoint'
+CONFIG_REFRESH_TOKEN = 'refresh-token'
+CONFIG_CLIENT_ID = 'client-id'
+CONFIG_CLIENT_SECRET = 'client-secret'
 
 
 def get_config_value(name, section=SF_CLI_NAME, fallback=_UNSET):
@@ -52,8 +72,16 @@ def set_config_value(name, value, section=SF_CLI_NAME):
     cli_config.set_value(section, name, value)
 
 
-def get_default_from_config(config, section, option, choice_list, fallback=1):
-    """Get value from congif replacing with default if not found"""
+def get_default_from_config(config, section, option, fallback=1):
+    """Get the default value from configuration, replacing with fallback if not found"""
+    try:
+        return config.get(section, option)
+    except (IndexError, configparser.NoSectionError, configparser.NoOptionError):
+        return fallback
+
+
+def get_default_choice_index_from_config(config, section, option, choice_list, fallback=1):
+    """Get index + 1 of the current choice value from cong, replacing with fallback if not found"""
     try:
         config_val = config.get(section, option)
         return [i for i, x in enumerate(choice_list)

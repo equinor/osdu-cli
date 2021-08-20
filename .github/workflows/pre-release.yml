@@ -37,7 +37,7 @@ jobs:
     - name: Source Version
       id: source_version
       run: |
-        ver=`cat osducli/__init__.py | grep __VERSION__ | sed s/' '//g | sed s/'__VERSION__='// |  sed s/\"//g`
+        ver=`cat src/osducli/__init__.py | grep __VERSION__ | sed s/' '//g | sed s/'__VERSION__='// |  sed s/\"//g`
         echo $ver
         echo ::set-output name=SOURCE_VERSION::$ver
         # echo $ver > $BUILD_STAGINGDIRECTORY/version

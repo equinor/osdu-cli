@@ -11,7 +11,7 @@ from knack.help import CLIHelp
 from knack.help_files import helps
 
 # Need to import so global help dict gets updated
-import osducli.commands.bulkload.help  # noqa: F401; pylint: disable=unused-import
+import osducli.commands.dataload.help  # noqa: F401; pylint: disable=unused-import
 import osducli.commands.config.help  # noqa: F401; pylint: disable=unused-import
 import osducli.commands.list.help  # noqa: F401; pylint: disable=unused-import
 import osducli.commands.status.help  # noqa: F401; pylint: disable=unused-import
