@@ -4,7 +4,7 @@
 # license information.
 # -----------------------------------------------------------------------------
 
-"""Help documentation for Service Fabric Node tag commands."""
+"""Help documentation for dataload commands."""
 
 from knack.help_files import helps
 

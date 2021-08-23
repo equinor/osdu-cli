@@ -4,7 +4,7 @@
 # license information.
 # -----------------------------------------------------------------------------
 
-"""Custom commands for the Service Fabric container support"""
+"""Custom commands for the dataload"""
 
 import os
 import json

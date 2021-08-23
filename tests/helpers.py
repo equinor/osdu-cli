@@ -36,8 +36,8 @@ MOCK_CONFIG = MagicMock()
 
 def mock_config_values(section, name, fallback):
     """Validate and mock config returns"""
-    if section != 'servicefabric':
-        raise ValueError('Cannot retrieve non service fabric config value')
+    if section != 'core':
+        raise ValueError('Cannot retrieve non core config value')
     if name == 'endpoint':
         return get_mock_endpoint()
     if name == 'security':

@@ -4,7 +4,7 @@
 # license information.
 # -----------------------------------------------------------------------------
 
-"""Entry or launch point for Service Fabric CLI.
+"""Entry or launch point for CLI.
 
 Handles creating and launching a CLI to handle a user command."""
 
