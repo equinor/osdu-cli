@@ -93,6 +93,8 @@ class OsduCommandLoader(CLICommandsLoader):
         with ArgumentsContext(self, 'dataload ingest') as arg_context:
             arg_context.argument('path', type=str, options_list=('-p', '--path'),
                                  help='Path to a file or folder containing manifests to upload.')
+            arg_context.argument('files', type=str, options_list=('-f', '--files'),
+                                 help='Associated files to upload for Work-Products.')
             arg_context.argument('batch_size', type=str, options_list=('-b', '--batch'),
                                  help='Batch size')
             arg_context.argument('runid_log', type=str, options_list=('-rl', '--runid-log'),

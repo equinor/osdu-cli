@@ -62,8 +62,8 @@ class UnitTests(ScenarioTest):
             assert len(result['units']) == result['count']
             assert len(log_capture.records) == 0
 
-    @patch.object(CliOsduConnection, 'cli_get_as_json', side_effect=SystemExit(1))
-    def test_unit_list_exit(self, mock_cli_get_as_json):  # pylint: disable=W0613
+    @patch.object(CliOsduConnection, 'cli_get_returning_json', side_effect=SystemExit(1))
+    def test_unit_list_exit(self, mock_cli_get_returning_json):  # pylint: disable=W0613
         """Test any exit error is propogated"""
         with self.assertRaises(SystemExit) as sysexit:
             _ = unit_list()
