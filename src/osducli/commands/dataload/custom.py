@@ -11,7 +11,7 @@ import json
 import sys
 import time
 from knack.log import get_logger
-from osducli.config import get_config_value, CONFIG_WORKFLOW_URL
+from osducli.config import get_config_value, CONFIG_WORKFLOW_URL, CONFIG_FILE_URL
 from osducli.connection import CliOsduConnection
 
 START_TIME = "startTimeStamp"
@@ -42,7 +42,65 @@ def _populate_request_body(data, data_type):
     return request
 
 
-def _add_metadata(data):
+def _upload_file(filepath):
+    connection = CliOsduConnection()
+    initiate_upload_response_json = connection.cli_get_returning_json(CONFIG_FILE_URL,
+                                                                      'files/uploadURL')
+
+    location = initiate_upload_response_json.get("Location")
+    if location:
+        signed_url_for_upload = location.get("SignedURL")
+        file_source = location.get("FileSource")
+        connection.cli_put(signed_url_for_upload, filepath)
+
+        # generated_file_id = upload_metadata_response_json.get("id")
+        # logger.info("%s is uploaded with file id %s with file source %s", filepath, generated_file_id, file_source)
+        # return generated_file_id, file_source
+        return file_source
+
+    return None
+
+
+def _update_work_products_metadata(data, files):
+    _update_legal_and_acl_tags(data["WorkProduct"])
+    _update_legal_and_acl_tags_all(data["WorkProductComponents"])
+    _update_legal_and_acl_tags_all(data["Datasets"])
+
+    # if files is specified then upload any needed data.
+    if files:
+        for dataset in data.get("Datasets"):
+            file_source_info = dataset.get("data", {}).get("DatasetProperties", {}).get("FileSourceInfo")
+            # only process if FileSource isn't already specified
+            if file_source_info and not file_source_info.get("FileSource"):
+                file_source_info["FileSource"] = _upload_file(os.path.join(files, file_source_info["Name"]))
+            else:
+                logger.info("FileSource already especified for '%s' - skipping.", file_source_info['Name'])
+
+    # TO DO: Here we scan by name from filemap
+    # with open(file_location_map) as file:
+    #     location_map = json.load(file)
+
+    # file_name = data["WorkProduct"]["data"]["Name"]
+    # if file_name in location_map:
+    #     file_source = location_map[file_name]["file_source"]
+    #     file_id = location_map[file_name]["file_id"]
+
+    #     # Update Dataset with Generated File Id and File Source.
+    #     data["Datasets"][0]["id"] = file_id
+    #     data["Datasets"][0]["data"]["DatasetProperties"]["FileSourceInfo"]["FileSource"] = file_source
+    #     del data["Datasets"][0]["data"]["DatasetProperties"]["FileSourceInfo"]["PreloadFilePath"]
+
+    #     # Update FileId in WorkProductComponent
+    #     data["WorkProductComponents"][0]["data"]["Datasets"][0] = file_id
+    # else:
+    #     logger.warn(f"Filemap {file_name} does not exist")
+
+    # logger.info(f"data to upload workproduct \n {data}")
+
+    return data
+
+
+def _update_legal_and_acl_tags_all(data):
     for datum in data:
         _update_legal_and_acl_tags(datum)
     return data
@@ -55,7 +113,7 @@ def _update_legal_and_acl_tags(datum):
     datum["acl"]["owners"] = [get_config_value("acl_owner", "core")]
 
 
-def ingest(path: str, runid_log: str = None, batch_size=1):  # is_wpc=False, file_location_map=""):
+def ingest(path: str, files: str = None, runid_log: str = None, batch_size: int = 1):  # file_location_map=""):
     """Ingest files into OSDU"""
 
     allfiles = []
@@ -63,17 +121,17 @@ def ingest(path: str, runid_log: str = None, batch_size=1):  # is_wpc=False, fil
         allfiles = [path]
 
     # Recursive traversal of files and subdirectories of the root directory and files processing
-    for root, _, files in os.walk(path):
-        logger.info("Files list: %s", files)
-        for file in files:
+    for root, _, _files in os.walk(path):
+        logger.info("Files list: %s", _files)
+        for file in _files:
             allfiles.append(os.path.join(root, file))
 
-    runids = _ingest_files(allfiles, runid_log, batch_size)
+    runids = _ingest_files(allfiles, files, runid_log, batch_size)
 
     return runids
 
 
-def _ingest_files(allfiles, runid_log, batch_size):  # noqa: C901 pylint: disable=R0912
+def _ingest_files(allfiles, files, runid_log, batch_size):  # noqa: C901 pylint: disable=R0912
     logger.info("Files list: %s", allfiles)
     runids = []
     runid_log_handle = None
@@ -92,16 +150,14 @@ def _ingest_files(allfiles, runid_log, batch_size):  # noqa: C901 pylint: disabl
             if not data_object:
                 logger.error("Error with file %s. File is empty.", filepath)
             elif "ReferenceData" in data_object and len(data_object["ReferenceData"]) > 0:
-                object_to_ingest = _add_metadata(data_object["ReferenceData"])
+                object_to_ingest = _update_legal_and_acl_tags_all(data_object["ReferenceData"])
                 data_type = "ReferenceData"
             elif "MasterData" in data_object and len(data_object["MasterData"]) > 0:
-                object_to_ingest = _add_metadata(data_object["MasterData"])
+                object_to_ingest = _update_legal_and_acl_tags_all(data_object["MasterData"])
                 data_type = "MasterData"
             elif "Data" in data_object:
                 data_type = "Data"
-                # if file_location_map is None or len(file_location_map) == 0:
-                raise Exception('File Location Map file path is required for Work-Product data ingestion')
-                # object_to_ingest = update_work_products_metadata(data_object["Data"], file_location_map)
+                object_to_ingest = _update_work_products_metadata(data_object["Data"], files)
 
             data_objects += object_to_ingest
             cur_batch += len(object_to_ingest)
@@ -141,7 +197,8 @@ def _status_check(run_id_list: list):
     results = []
     for run_id in run_id_list:
         connection = CliOsduConnection()
-        response_json = connection.cli_get_as_json(CONFIG_WORKFLOW_URL, 'workflow/Osdu_ingest/workflowRun/' + run_id)
+        response_json = connection.cli_get_returning_json(
+            CONFIG_WORKFLOW_URL, 'workflow/Osdu_ingest/workflowRun/' + run_id)
         if response_json is not None:
             run_status = response_json.get(STATUS)
             if run_status == "running":
@@ -301,5 +358,5 @@ def list_workflows():
     """
     print("TODO: Should perhaps be in a workflow category")
     connection = CliOsduConnection()
-    response_json = connection.cli_get_as_json(CONFIG_WORKFLOW_URL, 'workflow?prefix=')
+    response_json = connection.cli_get_returning_json(CONFIG_WORKFLOW_URL, 'workflow?prefix=')
     return response_json

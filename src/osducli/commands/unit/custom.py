@@ -17,5 +17,5 @@ def unit_list():
         timeout (int, optional): [description]. Defaults to 60.
     """
     connection = CliOsduConnection()
-    json = connection.cli_get_as_json(CONFIG_UNIT_URL, 'unit?limit=10000')
+    json = connection.cli_get_returning_json(CONFIG_UNIT_URL, 'unit?limit=10000')
     return json

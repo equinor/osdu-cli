@@ -74,7 +74,7 @@ class CliOsduConnectionTests(ScenarioTest):
 
         with LogCapture(level=logging.WARN) as log_capture:
             connection = CliOsduConnection()
-            result = connection.cli_get_as_json('unit_url', 'unit?limit=3')
+            result = connection.cli_get_returning_json('unit_url', 'unit?limit=3')
             assert isinstance(result, dict)
             assert result['count'] == 3
             self.assertEqual(len(log_capture.records), 0)
@@ -83,25 +83,25 @@ class CliOsduConnectionTests(ScenarioTest):
     type(not_found_response_mock).status_code = PropertyMock(return_value=404)
     not_found_response_mock.reason = "Not Found"
 
-    @patch.object(CliOsduConnection, 'get_as_json', return_value=(not_found_response_mock, None))
-    def test_cli_osdu_connection_cli_get_as_json_404(self, mock_get_as_json):  # pylint: disable=W0613
+    @patch.object(CliOsduConnection, 'get_returning_json', return_value=(not_found_response_mock, None))
+    def test_cli_osdu_connection_cli_get_as_json_404(self, mock_get_returning_json):  # pylint: disable=W0613
         """Test 404 errors return the correct message"""
         with self.assertRaises(SystemExit) as sysexit:
             with LogCapture(level=logging.INFO) as log_capture:
                 connection = CliOsduConnection()
-                _ = connection.cli_get_as_json('DUMMY_URL', 'DUMMY_STRING')
+                _ = connection.cli_get_returning_json('DUMMY_URL', 'DUMMY_STRING')
                 log_capture.check_present(
                     ('cli', 'ERROR', MSG_HTTP_ERROR)
                 )
             self.assertEqual(sysexit.exception.code, 1)
 
-    @patch.object(CliOsduConnection, 'get_as_json', side_effect=ValueError('ValueError'))
-    def test_cli_osdu_connection_get_as_json_bad_json(self, mock_get_as_json):  # pylint: disable=W0613
+    @patch.object(CliOsduConnection, 'get_returning_json', side_effect=ValueError('ValueError'))
+    def test_cli_osdu_connection_get_as_json_bad_json(self, mock_get_returning_json):  # pylint: disable=W0613
         """Test json decode error returns the correct message"""
         with self.assertRaises(SystemExit) as sysexit:
             with LogCapture(level=logging.INFO) as log_capture:
                 connection = CliOsduConnection()
-                _ = connection.cli_get_as_json('DUMMY_URL', 'DUMMY_STRING')
+                _ = connection.cli_get_returning_json('DUMMY_URL', 'DUMMY_STRING')
                 log_capture.check(
                     ('cli', 'ERROR', MSG_JSON_DECODE_ERROR)
                 )

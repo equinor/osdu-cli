@@ -268,7 +268,7 @@ class OsduConnection:
         response = requests.get(url, headers=headers)
         return response
 
-    def get_as_json(self, config_url_key: str, url_extra_path: str) -> Tuple[requests.Response, dict]:
+    def get_returning_json(self, config_url_key: str, url_extra_path: str) -> Tuple[requests.Response, dict]:
         """Get data from the specified url in json format.
 
         Args:
@@ -281,15 +281,32 @@ class OsduConnection:
         response = self.get(config_url_key, url_extra_path)
         return response, response.json()
 
+    def post(self, url: str, data: str) -> requests.Response:
+        """POST data to the specified url
+
+        Args:
+            url (str): url to POST to
+            data (str): data to send as the body
+
+        Returns:
+            [requests.Response]: response object
+        """
+        headers = self.get_headers()
+        logger.debug(url)
+        logger.debug(data)
+        response = requests.post(url, data, headers=headers)
+        logger.debug(response.text)
+        return response
+
     def post_json(self, config_url_key: str, url_extra_path: str, json_data: dict) -> requests.Response:
-        """Post data to a url
+        """POST json data to a url
 
         Args:
             config_url_key (str): key for the url in the config file
             url_extra_path (str): extra path to add to the url
 
         Returns:
-            requests.Response: [description]
+            requests.Response: response object
         """
 
         data = json.dumps(json_data)
@@ -298,11 +315,7 @@ class OsduConnection:
         unit_url = get_config_value(config_url_key, 'core')
         url = urljoin(server, unit_url) + url_extra_path
 
-        headers = self.get_headers()
-        logger.debug(url)
-        logger.debug(data)
-        response = requests.post(url, data, headers=headers)
-        logger.debug(response.text)
+        response = self.post(url, data)
         return response
 
     def post_json_returning_json(
@@ -320,21 +333,51 @@ class OsduConnection:
         response = self.post_json(config_url_key, url_extra_path, json_data)
         return response, response.json()
 
+    def put(self, url: str, filepath: str) -> requests.Response:
+        """PUT from the file at the given path to a url
+
+        Args:
+            url (str): url to PUT to
+            filepath (str): path to a file to PUT
+
+        Returns:
+            requests.Response: response object
+        """
+        # send batch request for creating records
+        headers = self.get_headers()
+        headers.update({
+            "Content-Type": "application/octet-stream",
+            "x-ms-blob-type": "BlockBlob"
+        })
+        with open(filepath, 'rb') as file_handle:
+            response = requests.put(url, data=file_handle, headers=headers)
+            return response
+
 
 class CliOsduConnection(OsduConnection):
-    """Specific class for use from the CLI that provides common error handling and messaging
+    """Specific class for use from the CLI that provides common error handling, use of configuration
+    and messaging
 
     Args:
         OsduConnection ([type]): [description]
     """
-    def cli_get_as_json(self, config_url_key: str, url_extra_path: str) -> dict:
+
+    @staticmethod
+    def _url_from_config(config_url_key: str, url_extra_path: str) -> str:
+        """Construct a url using values from configuration"""
+        server = get_config_value(CONFIG_SERVER, 'core')
+        unit_url = get_config_value(config_url_key, 'core')
+        url = urljoin(server, unit_url) + url_extra_path
+        return url
+
+    def cli_get_returning_json(self, config_url_key: str, url_extra_path: str) -> dict:
         """[summary]
 
         Args:
             timeout (int, optional): [description]. Defaults to 60.
         """
         try:
-            response, resp_json = self.get_as_json(config_url_key, url_extra_path)
+            response, resp_json = self.get_returning_json(config_url_key, url_extra_path)
             if response.status_code in [200]:
                 return resp_json
 
@@ -398,3 +441,33 @@ class CliOsduConnection(OsduConnection):
         #     except (requests.RequestException, HTTPError) as exc:
         #         logger.error(f"Unexpected request error. Reason: {exc}")
         #         sys.exit(2)
+
+    def cli_put(self,
+                url: str,
+                # config_url_key: str,
+                # url_extra_path: str,
+                filepath: str) -> Tuple[requests.Response, dict]:
+        """PUT the file at the given path to the given url.
+        Includes common CLI specific error handling
+
+        Args:
+            config_url_key (str): [description]
+            url_extra_path (str): [description]
+            filepath (str): path to a file to PUT
+
+        Returns:
+            Tuple[requests.Response, dict]: Turle with response object and returned json
+        """
+        try:
+            # url = CliOsduConnection._url_from_config(config_url_key, url_extra_path)
+            response = self.put(url, filepath)
+            if response.status_code in [200]:
+                return response, response.json()
+
+            logger.error(MSG_HTTP_ERROR)
+            logger.error("Error (%s) - %s", response.status_code, response.reason)
+        except ValueError as ex:
+            logger.error(MSG_JSON_DECODE_ERROR)
+            logger.debug(ex)
+
+        sys.exit(1)
