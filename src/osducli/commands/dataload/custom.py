@@ -11,8 +11,10 @@ import json
 import sys
 import time
 from knack.log import get_logger
-from osducli.config import get_config_value, CONFIG_WORKFLOW_URL, CONFIG_FILE_URL
-from osducli.connection import CliOsduConnection
+from osducli.config import CONFIG_SEARCH_URL, get_config_value
+from osducli.config import CONFIG_WORKFLOW_URL, CONFIG_FILE_URL, CONFIG_LEGAL_TAG, CONFIG_ACL_VIEWER, CONFIG_ACL_OWNER
+
+from osducli.cliclient import CliOsduClient
 
 START_TIME = "startTimeStamp"
 END_TIME = "endTimeStamp"
@@ -43,7 +45,7 @@ def _populate_request_body(data, data_type):
 
 
 def _upload_file(filepath):
-    connection = CliOsduConnection()
+    connection = CliOsduClient()
     initiate_upload_response_json = connection.cli_get_returning_json(CONFIG_FILE_URL,
                                                                       'files/uploadURL')
 
@@ -107,10 +109,10 @@ def _update_legal_and_acl_tags_all(data):
 
 
 def _update_legal_and_acl_tags(datum):
-    datum["legal"]["legaltags"] = [get_config_value("legal_tag", "core")]
+    datum["legal"]["legaltags"] = [get_config_value(CONFIG_LEGAL_TAG, "core")]
     datum["legal"]["otherRelevantDataCountries"] = ["US"]
-    datum["acl"]["viewers"] = [get_config_value("acl_viewer", "core")]
-    datum["acl"]["owners"] = [get_config_value("acl_owner", "core")]
+    datum["acl"]["viewers"] = [get_config_value(CONFIG_ACL_VIEWER, "core")]
+    datum["acl"]["owners"] = [get_config_value(CONFIG_ACL_OWNER, "core")]
 
 
 def ingest(path: str, files: str = None, runid_log: str = None, batch_size: int = 1):  # file_location_map=""):
@@ -181,13 +183,14 @@ def _ingest_files(allfiles, files, runid_log, batch_size):  # noqa: C901 pylint:
 
 def _ingest_send_batch(runids, runid_log_handle, data_objects, data_type):
     request_data = _populate_request_body(data_objects, data_type)
-    connection = CliOsduConnection()
-    _, response_json = connection.post_json_returning_json(CONFIG_WORKFLOW_URL,
-                                                           'workflow/Osdu_ingest/workflowRun',
-                                                           request_data)
+    connection = CliOsduClient()
+    response_json = connection.cli_post_json_returning_json(CONFIG_WORKFLOW_URL,
+                                                            'workflow/Osdu_ingest/workflowRun',
+                                                            request_data)
     runid = response_json.get('runId')
     logger.info("Returned runID: %s", runid)
-    runid_log_handle.write(f'{runid}\n')
+    if runid_log_handle:
+        runid_log_handle.write(f'{runid}\n')
     runids.append(runid)
 
 
@@ -196,7 +199,7 @@ def _status_check(run_id_list: list):
 
     results = []
     for run_id in run_id_list:
-        connection = CliOsduConnection()
+        connection = CliOsduClient()
         response_json = connection.cli_get_returning_json(
             CONFIG_WORKFLOW_URL, 'workflow/Osdu_ingest/workflowRun/' + run_id)
         if response_json is not None:
@@ -261,8 +264,8 @@ def _verify_ids(record_ids):
     search_query = _create_search_query(record_ids)
     logger.info("search query %s", search_query)
 
-    connection = CliOsduConnection()
-    response_json = connection.cli_post_json_returning_json('search_url', 'query', search_query)
+    connection = CliOsduClient()
+    response_json = connection.cli_post_json_returning_json(CONFIG_SEARCH_URL, 'query', search_query)
 
     logger.info("search response %s", response_json)
     ingested_records = response_json.get("results")
@@ -357,6 +360,6 @@ def list_workflows():
         [type]: [description]
     """
     print("TODO: Should perhaps be in a workflow category")
-    connection = CliOsduConnection()
+    connection = CliOsduClient()
     response_json = connection.cli_get_returning_json(CONFIG_WORKFLOW_URL, 'workflow?prefix=')
     return response_json

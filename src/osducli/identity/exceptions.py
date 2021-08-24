@@ -4,9 +4,8 @@
 # license information.
 # -----------------------------------------------------------------------------
 
-"""Azure OSDU command line environment"""
-
-# from pkgutil import extend_path
-# __path__ = extend_path(__path__, __name__)
-
-__VERSION__ = '0.0.4'
+class CredentialUnavailableError(Exception):
+    """The credential could not authenticate because required data or state is unavailable."""
+    def __init__(self, message=None, **kwargs):
+        self.message = str(message)
+        super().__init__(kwargs)

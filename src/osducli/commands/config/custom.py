@@ -61,14 +61,14 @@ from osducli.commands.config.consts import (MSG_INTRO,
 
 
 def _print_cur_configuration(file_config):
-    from osducli.config import SF_CLI_ENV_VAR_PREFIX
+    from osducli.config import CLI_ENV_VAR_PREFIX
     print(MSG_HEADING_CURRENT_CONFIG_INFO)
     for section in file_config.sections():
         print()
         print('[{}]'.format(section))
         for option in file_config.options(section):
             print('{} = {}'.format(option, file_config.get(section, option)))
-    env_vars = [ev for ev in os.environ if ev.startswith(SF_CLI_ENV_VAR_PREFIX)]
+    env_vars = [ev for ev in os.environ if ev.startswith(CLI_ENV_VAR_PREFIX)]
     if env_vars:
         print(MSG_HEADING_ENV_VARS)
         print('\n'.join(['{} = {}'.format(ev, os.environ[ev]) for ev in env_vars]))

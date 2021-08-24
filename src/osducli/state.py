@@ -14,8 +14,8 @@ from knack.config import CLIConfig
 # track states associated with osducli, such as the last time osducli version was checked.
 
 # Default names
-SF_CLI_NAME = 'osducli'
-SF_CLI_STATE_DIR = os.path.expanduser(os.path.join('~', '.{0}'.format(SF_CLI_NAME)))
+CLI_NAME = 'osducli'
+SF_CLI_STATE_DIR = os.path.expanduser(os.path.join('~', '.{0}'.format(CLI_NAME)))
 STATE_FILE_NAME = 'state'
 
 # Format: Year, month, day, hour, minute, second, microsecond
@@ -30,7 +30,7 @@ def get_state_path():
 
     # This is the same as
     # self.config_path = os.path.join(self.config_dir, CLIConfig._CONFIG_FILE_NAME)
-    return CLIConfig(SF_CLI_STATE_DIR, SF_CLI_NAME, 'state').config_path
+    return CLIConfig(SF_CLI_STATE_DIR, CLI_NAME, 'state').config_path
 
 
 def get_state_value(name, fallback=None):
@@ -38,7 +38,7 @@ def get_state_value(name, fallback=None):
 
     In the case where the state entry name is not found, will use fallback value."""
 
-    cli_config = CLIConfig(SF_CLI_STATE_DIR, SF_CLI_NAME, 'state')
+    cli_config = CLIConfig(SF_CLI_STATE_DIR, CLI_NAME, 'state')
 
     return cli_config.get('core', name, fallback)
 
@@ -52,7 +52,7 @@ def set_state_value(name, value):
     :return: None
     """
 
-    cli_config = CLIConfig(SF_CLI_STATE_DIR, SF_CLI_NAME, 'state')
+    cli_config = CLIConfig(SF_CLI_STATE_DIR, CLI_NAME, 'state')
     cli_config.set_value('core', name, value)
 
 

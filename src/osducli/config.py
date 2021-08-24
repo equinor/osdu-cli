@@ -8,67 +8,67 @@
 
 import os
 import json
-from six.moves import configparser  # pylint: disable=redefined-builtin
+import configparser
 from knack.config import CLIConfig, _UNSET
 from adal.token_cache import TokenCache
 
 # Default names
-SF_CLI_NAME = 'osducli'
-SF_CLI_CONFIG_DIR = os.path.expanduser(os.path.join('~', '.{0}'.format(SF_CLI_NAME)))
-SF_CLI_ENV_VAR_PREFIX = SF_CLI_NAME
+CLI_NAME = 'osducli'
+CLI_CONFIG_DIR = os.path.expanduser(os.path.join('~', '.{0}'.format(CLI_NAME)))
+CLI_ENV_VAR_PREFIX = CLI_NAME
 
 CONFIG_SERVER = 'server'
-CONFIG_FILE_URL = 'file-url'
-CONFIG_SCHEMA_URL = 'schema-url'
-CONFIG_SEARCH_URL = 'search-url'
-CONFIG_STORAGE_URL = 'storage-url'
-CONFIG_UNIT_URL = 'unit-url'
-CONFIG_WORKFLOW_URL = 'workflow-url'
+CONFIG_FILE_URL = 'file_url'
+CONFIG_SCHEMA_URL = 'schema_url'
+CONFIG_SEARCH_URL = 'search_url'
+CONFIG_STORAGE_URL = 'storage_url'
+CONFIG_UNIT_URL = 'unit_url'
+CONFIG_WORKFLOW_URL = 'workflow_url'
 
-CONFIG_DATA_PARTITION_ID = 'data-partition-id'
-CONFIG_LEGAL_TAG = 'legal-tag'
-CONFIG_ACL_VIEWER = 'acl-viewer'
-CONFIG_ACL_OWNER = 'acl-owner'
+CONFIG_DATA_PARTITION_ID = 'data_partition_id'
+CONFIG_LEGAL_TAG = 'legal_tag'
+CONFIG_ACL_VIEWER = 'acl_viewer'
+CONFIG_ACL_OWNER = 'acl_owner'
 
-CONFIG_AUTHENTICATION_MODE = 'authentication-mode'
+CONFIG_AUTHENTICATION_MODE = 'authentication_mode'
 
 CONFIG_AUTHENTICATION_AUTHORITY = 'authority'
 CONFIG_AUTHENTICATION_SCOPES = 'scopes'
 
-CONFIG_TOKEN_ENDPOINT = 'token-endpoint'
-CONFIG_REFRESH_TOKEN = 'refresh-token'
-CONFIG_CLIENT_ID = 'client-id'
-CONFIG_CLIENT_SECRET = 'client-secret'
+CONFIG_TOKEN_ENDPOINT = 'token_endpoint'
+CONFIG_REFRESH_TOKEN = 'refresh_token'
+CONFIG_CLIENT_ID = 'client_id'
+CONFIG_CLIENT_SECRET = 'client_secret'
 
 
-def get_config_value(name, section=SF_CLI_NAME, fallback=_UNSET):
+def get_config_value(name, section=CLI_NAME, fallback=_UNSET):
     """Gets a config by name.
 
     In the case where the config name is not found, will use fallback value."""
 
-    cli_config = CLIConfig(SF_CLI_CONFIG_DIR, SF_CLI_ENV_VAR_PREFIX)
+    cli_config = CLIConfig(CLI_CONFIG_DIR, CLI_ENV_VAR_PREFIX)
 
     return cli_config.get(section, name, fallback)
 
 
-def get_config_bool(name, section=SF_CLI_NAME, fallback=_UNSET):
+def get_config_bool(name, section=CLI_NAME, fallback=_UNSET):
     """Checks if a config value is set to a valid bool value."""
 
-    cli_config = CLIConfig(SF_CLI_CONFIG_DIR, SF_CLI_ENV_VAR_PREFIX)
+    cli_config = CLIConfig(CLI_CONFIG_DIR, CLI_ENV_VAR_PREFIX)
     return cli_config.getboolean(section, name, fallback)
 
 
-def get_config_int(name, section=SF_CLI_NAME, fallback=_UNSET):
+def get_config_int(name, section=CLI_NAME, fallback=_UNSET):
     """Checks if a config value is set to a valid int value."""
 
-    cli_config = CLIConfig(SF_CLI_CONFIG_DIR, SF_CLI_ENV_VAR_PREFIX)
+    cli_config = CLIConfig(CLI_CONFIG_DIR, CLI_ENV_VAR_PREFIX)
     return cli_config.getint(section, name, fallback)
 
 
-def set_config_value(name, value, section=SF_CLI_NAME):
+def set_config_value(name, value, section=CLI_NAME):
     """Set a config by name to a value."""
 
-    cli_config = CLIConfig(SF_CLI_CONFIG_DIR, SF_CLI_ENV_VAR_PREFIX)
+    cli_config = CLIConfig(CLI_CONFIG_DIR, CLI_ENV_VAR_PREFIX)
     cli_config.set_value(section, name, value)
 
 

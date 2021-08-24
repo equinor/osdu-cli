@@ -4,24 +4,28 @@
 # license information.
 # -----------------------------------------------------------------------------
 
-"""Test cases for CliOsduConnection"""
+"""Test cases for CliOsduClient"""
 
 import logging
 
 from mock import MagicMock, PropertyMock, patch
 from knack.testsdk import ScenarioTest
 from testfixtures import LogCapture
+from osducli.config import CONFIG_SERVER, CONFIG_AUTHENTICATION_MODE
 
-from osducli.connection import CliOsduConnection
-from osducli.connection import MSG_JSON_DECODE_ERROR, MSG_HTTP_ERROR
+from osducli.cliclient import CliOsduClient
+from osducli.client import MSG_HTTP_ERROR
+from osducli.identity import OsduTokenCredential
 
 
 def mock_config_values(section, name, fallback=None):  # pylint: disable=W0613
     """Validate and mock config returns"""
     # if section != 'core':
     #     raise ValueError(f'Cannot retrieve config section \'{section}\'')
-    if name == 'server':
+    if name == CONFIG_SERVER:
         return 'https://dummy.com'
+    if name == CONFIG_AUTHENTICATION_MODE:
+        return 'refresh_token'
     return f'{section}_{name}'
 
 
@@ -29,7 +33,7 @@ MOCK_CONFIG = MagicMock()
 MOCK_CONFIG.return_value.get.side_effect = mock_config_values
 
 
-class CliOsduConnectionTests(ScenarioTest):
+class CliOsduClientTests(ScenarioTest):
     """Test cases for unit commands
 
     Uses the VCR library to record / replay HTTP requests into
@@ -47,7 +51,7 @@ class CliOsduConnectionTests(ScenarioTest):
     def __init__(self, method_name):
         super().__init__(None, method_name, filter_headers=['Authorization'])
         self.recording_processors = [self.name_replacer]
-        self.vcr.register_matcher('always', CliOsduConnectionTests._vcrpy_match_always)
+        self.vcr.register_matcher('always', CliOsduClientTests._vcrpy_match_always)
         self.vcr.match_on = ['always']
 
     # """Playground test for unit commands - some notes / examples"""
@@ -65,7 +69,8 @@ class CliOsduConnectionTests(ScenarioTest):
 
     # If doing a new live test to get / refresh a recording then comment out the below patch and
     # after getting a recording delete any recording authentication interactions
-    @patch.object(CliOsduConnection, 'get_headers', return_value={})
+    # @patch.object(CliOsduClient, 'get_headers', return_value={})
+    @patch.object(OsduTokenCredential, 'get_token', return_value='DUMMY_ACCESS_TOKEN')
     @patch('osducli.config.CLIConfig', new=MOCK_CONFIG)
     def test_cli_osdu_connection_cli_get_as_json(self, mock_get_headers):  # pylint: disable=W0613
         """Test valid response returns correct json"""
@@ -73,7 +78,7 @@ class CliOsduConnectionTests(ScenarioTest):
         self.cassette.filter_headers = ['Authorization']
 
         with LogCapture(level=logging.WARN) as log_capture:
-            connection = CliOsduConnection()
+            connection = CliOsduClient()
             result = connection.cli_get_returning_json('unit_url', 'unit?limit=3')
             assert isinstance(result, dict)
             assert result['count'] == 3
@@ -83,29 +88,34 @@ class CliOsduConnectionTests(ScenarioTest):
     type(not_found_response_mock).status_code = PropertyMock(return_value=404)
     not_found_response_mock.reason = "Not Found"
 
-    @patch.object(CliOsduConnection, 'get_returning_json', return_value=(not_found_response_mock, None))
-    def test_cli_osdu_connection_cli_get_as_json_404(self, mock_get_returning_json):  # pylint: disable=W0613
+    # pylint: disable=W0613
+    @patch.object(CliOsduClient, '_url_from_config', return_value='https://www.test.com/test')
+    @patch.object(CliOsduClient, 'get', return_value=not_found_response_mock)
+    def test_cli_osdu_connection_cli_get_returning_json_404(self, mock_url_from_config, mock_get):
         """Test 404 errors return the correct message"""
         with self.assertRaises(SystemExit) as sysexit:
             with LogCapture(level=logging.INFO) as log_capture:
-                connection = CliOsduConnection()
-                _ = connection.cli_get_returning_json('DUMMY_URL', 'DUMMY_STRING')
+                connection = CliOsduClient()
+                _ = connection.cli_get_returning_json('DUMMY_KEY', 'DUMMY_STRING')
                 log_capture.check_present(
                     ('cli', 'ERROR', MSG_HTTP_ERROR)
                 )
             self.assertEqual(sysexit.exception.code, 1)
 
-    @patch.object(CliOsduConnection, 'get_returning_json', side_effect=ValueError('ValueError'))
-    def test_cli_osdu_connection_get_as_json_bad_json(self, mock_get_returning_json):  # pylint: disable=W0613
-        """Test json decode error returns the correct message"""
-        with self.assertRaises(SystemExit) as sysexit:
-            with LogCapture(level=logging.INFO) as log_capture:
-                connection = CliOsduConnection()
-                _ = connection.cli_get_returning_json('DUMMY_URL', 'DUMMY_STRING')
-                log_capture.check(
-                    ('cli', 'ERROR', MSG_JSON_DECODE_ERROR)
-                )
-            self.assertEqual(sysexit.exception.code, 1)
+    # # pylint: disable=W0613
+    # @patch.object(CliOsduClient, '_url_from_config', return_value='https://www.test.com/test')
+    # @patch.object(Response, 'json', return_value='BAD JSON')
+    # @patch.object(CliOsduClient, 'cli_get_returning_json', side_effect=ValueError('ValueError'))
+    # def test_cli_osdu_connection_get_as_json_bad_json(self):  #, mock_url_from_config, mock_cli_get_returning_json):
+    #     """Test json decode error returns the correct message"""
+    #     with self.assertRaises(SystemExit) as sysexit:
+    #         with LogCapture(level=logging.INFO) as log_capture:
+    #             connection = CliOsduClient()
+    #             _ = connection.cli_get_returning_json('DUMMY_URL', 'DUMMY_STRING')
+    #             log_capture.check(
+    #                 ('cli', 'ERROR', MSG_JSON_DECODE_ERROR)
+    #             )
+    #         self.assertEqual(sysexit.exception.code, 1)
 
     @classmethod
     def _vcrpy_match_always(cls, url1, url2):  # pylint: disable=W0613

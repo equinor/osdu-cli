@@ -6,7 +6,7 @@
 
 """Custom cluster upgrade specific commands"""
 
-from osducli.connection import CliOsduConnection
+from osducli.cliclient import CliOsduClient
 from osducli.config import CONFIG_UNIT_URL
 
 
@@ -16,6 +16,6 @@ def unit_list():
     Args:
         timeout (int, optional): [description]. Defaults to 60.
     """
-    connection = CliOsduConnection()
+    connection = CliOsduClient()
     json = connection.cli_get_returning_json(CONFIG_UNIT_URL, 'unit?limit=10000')
     return json
