@@ -55,14 +55,8 @@ setup(
     include_package_data=True,
     install_requires=[
         'knack==0.8.2',
-        'msrest>=0.5.0',
-        'msrestazure',
         'requests',
-        'msal',
-        'psutil',
-        'portalocker',
-        "joblib",
-        "tqdm"
+        'msal'
     ],
     project_urls={
         'Issue Tracker': 'https://github.com/equinor/osdu-cli/issues',

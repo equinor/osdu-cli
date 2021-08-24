@@ -28,6 +28,11 @@ For more information, specify the `-h` flag:
 Change Log
 ==========
 
+0.0.5
+-----
+
+- Fix dependencies
+
 0.0.4
 -----
 
