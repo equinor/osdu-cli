@@ -28,6 +28,11 @@ For more information, specify the `-h` flag:
 Change Log
 ==========
 
+0.0.4
+-----
+
+- Refactor of connection code
+
 0.0.3
 -----
 

@@ -61,7 +61,6 @@ setup(
         'msal',
         'psutil',
         'portalocker',
-        'six',
         "joblib",
         "tqdm"
     ],

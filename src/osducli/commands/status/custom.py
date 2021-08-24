@@ -17,7 +17,7 @@ from osducli.config import (CONFIG_FILE_URL,
                             CONFIG_STORAGE_URL,
                             CONFIG_UNIT_URL,
                             CONFIG_WORKFLOW_URL)
-from osducli.connection import OsduConnection
+from osducli.cliclient import CliOsduClient
 
 logger = get_logger(__name__)
 
@@ -28,25 +28,25 @@ def status(cmd: CLICommand):   # pylint: disable=unused-argument
     Returns:
         [type]: [description]
     """
-    connection = OsduConnection()
+    connection = CliOsduClient()
 
     try:
-        response = connection.get(CONFIG_FILE_URL, 'readiness_check')
+        response = connection.cli_get(CONFIG_FILE_URL, 'readiness_check')
         print(f"File service           {response.status_code}\t {response.reason}")
 
-        response = connection.get(CONFIG_SCHEMA_URL, 'schema?limit=1')
+        response = connection.cli_get(CONFIG_SCHEMA_URL, 'schema?limit=1')
         print(f"Schema service         {response.status_code}\t {response.reason}")
 
-        response = connection.get(CONFIG_SEARCH_URL, 'health/readiness_check')
+        response = connection.cli_get(CONFIG_SEARCH_URL, 'health/readiness_check')
         print(f"Search service         {response.status_code}\t {response.reason}")
 
-        response = connection.get(CONFIG_STORAGE_URL, 'health')
+        response = connection.cli_get(CONFIG_STORAGE_URL, 'health')
         print(f"Storage service        {response.status_code}\t {response.reason}")
 
-        response = connection.get(CONFIG_UNIT_URL, '../_ah/readiness_check')
+        response = connection.cli_get(CONFIG_UNIT_URL, '../_ah/readiness_check')
         print(f"Unit service           {response.status_code}\t {response.reason}")
 
-        response = connection.get(CONFIG_WORKFLOW_URL, '../readiness_check')
+        response = connection.cli_get(CONFIG_WORKFLOW_URL, '../readiness_check')
         print(f"Workflow service       {response.status_code}\t {response.reason}")
 
     except (IndexError, NoSectionError, NoOptionError) as ex:

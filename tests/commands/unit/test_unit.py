@@ -12,15 +12,19 @@ from mock import MagicMock, patch
 from knack.testsdk import ScenarioTest
 from testfixtures import LogCapture
 from osducli.commands.unit.custom import unit_list
-from osducli.connection import CliOsduConnection
+from osducli.config import CONFIG_AUTHENTICATION_MODE, CONFIG_SERVER
+from osducli.cliclient import CliOsduClient
+from osducli.identity import OsduTokenCredential
 
 
 def mock_config_values(section, name, fallback=None):  # pylint: disable=W0613
     """Validate and mock config returns"""
     # if section != 'core':
     #     raise ValueError(f'Cannot retrieve config section \'{section}\'')
-    if name == 'server':
+    if name == CONFIG_SERVER:
         return 'https://dummy.com'
+    if name == CONFIG_AUTHENTICATION_MODE:
+        return 'refresh_token'
     return f'{section}_{name}'
 
 
@@ -47,7 +51,7 @@ class UnitTests(ScenarioTest):
     # - Delete or obfuscate any other sensitive information.
     # - Adjust test case as necessary e.g. totalCount
     # - Add patch and parameter back
-    @patch.object(CliOsduConnection, 'get_headers', return_value={})
+    @patch.object(OsduTokenCredential, 'get_token', return_value='DUMMY_ACCESS_TOKEN')
     @patch('osducli.config.CLIConfig', new=MOCK_CONFIG)
     def test_unit_list(self, get_headers):  # pylint: disable=W0613
         """Test for a successful response"""
@@ -62,7 +66,7 @@ class UnitTests(ScenarioTest):
             assert len(result['units']) == result['count']
             assert len(log_capture.records) == 0
 
-    @patch.object(CliOsduConnection, 'cli_get_returning_json', side_effect=SystemExit(1))
+    @patch.object(CliOsduClient, 'cli_get_returning_json', side_effect=SystemExit(1))
     def test_unit_list_exit(self, mock_cli_get_returning_json):  # pylint: disable=W0613
         """Test any exit error is propogated"""
         with self.assertRaises(SystemExit) as sysexit:

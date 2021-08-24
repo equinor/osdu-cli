@@ -6,7 +6,7 @@
 
 """Custom cluster upgrade specific commands"""
 from collections import OrderedDict
-from osducli.connection import CliOsduConnection
+from osducli.cliclient import CliOsduClient
 from osducli.config import CONFIG_SEARCH_URL
 
 
@@ -23,7 +23,7 @@ def records():
         "aggregateBy": "kind"
     }
 
-    connection = CliOsduConnection()
+    connection = CliOsduClient()
     json_response = connection.cli_post_json_returning_json(CONFIG_SEARCH_URL, 'query', request_data)
 
     services = [OrderedDict([('Kind', record['key']), ('Count', record['count'])])

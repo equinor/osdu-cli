@@ -11,7 +11,7 @@ Handles creating and launching a CLI to handle a user command."""
 import sys
 from knack.invocation import CommandInvoker
 from knack.util import CommandResultItem
-from osducli.config import SF_CLI_CONFIG_DIR, SF_CLI_ENV_VAR_PREFIX, SF_CLI_NAME
+from osducli.config import CLI_CONFIG_DIR, CLI_ENV_VAR_PREFIX, CLI_NAME
 from osducli.osdu_cli import OsduCli
 from osducli.osdu_command_loader import OsduCommandLoader
 from osducli.osdu_command_help import OsduCommandHelp
@@ -54,9 +54,9 @@ def main():
 
         args_list = sys.argv[1:]
 
-        osducli = OsduCli(cli_name=SF_CLI_NAME,
-                          config_dir=SF_CLI_CONFIG_DIR,
-                          config_env_var_prefix=SF_CLI_ENV_VAR_PREFIX,
+        osducli = OsduCli(cli_name=CLI_NAME,
+                          config_dir=CLI_CONFIG_DIR,
+                          config_env_var_prefix=CLI_ENV_VAR_PREFIX,
                           invocation_cls=OsduInvoker,
                           commands_loader_cls=OsduCommandLoader,
                           help_cls=OsduCommandHelp)
