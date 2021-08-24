@@ -136,7 +136,7 @@ class OsduMsalInteractiveCredential(OsduBaseCredential):
 
             if cache.has_state_changed:
                 with open(self.token_cache, 'w') as cachefile:
-                    cache.serialize()
+                    cachefile.write(cache.serialize())
 
         return result
 
