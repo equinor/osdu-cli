@@ -14,6 +14,8 @@ from urllib.parse import urljoin
 import requests
 from knack.log import get_logger
 
+from osdu.client import OsduClient
+from osdu.identity import OsduTokenCredential, OsduMsalInteractiveCredential
 from osducli.config import get_config_int, get_config_value, CLI_CONFIG_DIR
 from osducli.config import (CONFIG_SERVER,
                             CONFIG_DATA_PARTITION_ID,
@@ -24,8 +26,6 @@ from osducli.config import (CONFIG_SERVER,
                             CONFIG_CLIENT_SECRET,
                             CONFIG_AUTHENTICATION_AUTHORITY,
                             CONFIG_AUTHENTICATION_SCOPES)
-from osducli.client import OsduClient
-from osducli.identity import OsduTokenCredential, OsduMsalInteractiveCredential
 
 MSG_JSON_DECODE_ERROR = 'Unable to decode the response. Try running again with the --debug command line argument for'\
                         ' more information'

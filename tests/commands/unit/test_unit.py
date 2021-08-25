@@ -11,10 +11,12 @@ import logging
 from mock import MagicMock, patch
 from knack.testsdk import ScenarioTest
 from testfixtures import LogCapture
+
+from osdu.identity import OsduTokenCredential
+
 from osducli.commands.unit.custom import unit_list
 from osducli.config import CONFIG_AUTHENTICATION_MODE, CONFIG_SERVER
 from osducli.cliclient import CliOsduClient
-from osducli.identity import OsduTokenCredential
 
 
 def mock_config_values(section, name, fallback=None):  # pylint: disable=W0613
