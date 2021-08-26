@@ -8,7 +8,7 @@
 import os
 import sys
 from configparser import NoOptionError, NoSectionError
-from typing import Tuple
+from typing import Tuple, Union
 from urllib.parse import urljoin
 
 import requests
@@ -16,6 +16,7 @@ from knack.log import get_logger
 
 from osdu.client import OsduClient
 from osdu.identity import OsduTokenCredential, OsduMsalInteractiveCredential
+from requests.models import HTTPError
 from osducli.config import get_config_int, get_config_value, CLI_CONFIG_DIR
 from osducli.config import (CONFIG_SERVER,
                             CONFIG_DATA_PARTITION_ID,
@@ -122,25 +123,23 @@ class CliOsduClient(OsduClient):
 
         sys.exit(1)
 
-    def cli_post_json_returning_json(self, config_url_key: str, url_extra_path: str, json_data: dict):
+    def cli_post_returning_json(self, config_url_key: str, url_extra_path: str, data: Union[str, dict]):
         """[summary]
 
         Args:
             config_url_key (str): key in configuration for the base path
             url_extra_path (str): extra path to add to the base path
-            request_data (str): [description]
+            data (Union[str, dict]): json data as string or dict to send as the body
 
         Returns:
             [type]: [description]
         """
         try:
             url = self._url_from_config(config_url_key, url_extra_path)
-            response, resp_json = self.post_json_returning_json(url, json_data)
-            if response.status_code in [200]:
-                return resp_json
-
+            return self.post_returning_json(url, data)
+        except HTTPError as ex:
             logger.error(MSG_HTTP_ERROR)
-            logger.error("Error (%s) - %s", response.status_code, response.reason)
+            logger.error("Error (%s) - %s", ex.response.status_code, ex.response.reason)
         except ValueError as ex:
             logger.error(MSG_JSON_DECODE_ERROR)
             logger.debug(ex)

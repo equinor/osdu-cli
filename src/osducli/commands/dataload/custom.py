@@ -184,9 +184,9 @@ def _ingest_files(allfiles, files, runid_log, batch_size):  # noqa: C901 pylint:
 def _ingest_send_batch(runids, runid_log_handle, data_objects, data_type):
     request_data = _populate_request_body(data_objects, data_type)
     connection = CliOsduClient()
-    response_json = connection.cli_post_json_returning_json(CONFIG_WORKFLOW_URL,
-                                                            'workflow/Osdu_ingest/workflowRun',
-                                                            request_data)
+    response_json = connection.cli_post_returning_json(CONFIG_WORKFLOW_URL,
+                                                       'workflow/Osdu_ingest/workflowRun',
+                                                       request_data)
     runid = response_json.get('runId')
     logger.info("Returned runID: %s", runid)
     if runid_log_handle:
@@ -265,7 +265,7 @@ def _verify_ids(record_ids):
     logger.info("search query %s", search_query)
 
     connection = CliOsduClient()
-    response_json = connection.cli_post_json_returning_json(CONFIG_SEARCH_URL, 'query', search_query)
+    response_json = connection.cli_post_returning_json(CONFIG_SEARCH_URL, 'query', search_query)
 
     logger.info("search response %s", response_json)
     ingested_records = response_json.get("results")

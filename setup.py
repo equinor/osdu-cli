@@ -55,7 +55,7 @@ setup(
     include_package_data=True,
     install_requires=[
         'knack==0.8.2',
-        'osdu-sdk==0.0.1',
+        'osdu-sdk==0.0.2',
         'requests',
         'msal'
     ],

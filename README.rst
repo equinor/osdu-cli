@@ -28,6 +28,11 @@ For more information, specify the `-h` flag:
 Change Log
 ==========
 
+0.0.8
+-----
+
+- use osdu-sdk 0.0.2
+  
 0.0.7
 -----
 

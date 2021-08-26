@@ -24,7 +24,7 @@ def records():
     }
 
     connection = CliOsduClient()
-    json_response = connection.cli_post_json_returning_json(CONFIG_SEARCH_URL, 'query', request_data)
+    json_response = connection.cli_post_returning_json(CONFIG_SEARCH_URL, 'query', request_data)
 
     services = [OrderedDict([('Kind', record['key']), ('Count', record['count'])])
                 for record in json_response['aggregations']]
