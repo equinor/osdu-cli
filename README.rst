@@ -28,6 +28,11 @@ For more information, specify the `-h` flag:
 Change Log
 ==========
 
+0.0.9
+-----
+
+- entitlements commands
+
 0.0.8
 -----
 
