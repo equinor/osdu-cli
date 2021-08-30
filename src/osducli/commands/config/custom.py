@@ -10,6 +10,7 @@ import os
 from osducli.prompt import prompt, prompt_y_n, prompt_choice_list
 from osducli.config import get_default_from_config, get_default_choice_index_from_config
 from osducli.config import (CONFIG_SERVER,
+                            CONFIG_ENTITLEMENTS_URL,
                             CONFIG_FILE_URL,
                             CONFIG_SCHEMA_URL,
                             CONFIG_SEARCH_URL,
@@ -39,6 +40,7 @@ from osducli.commands.config.consts import (MSG_INTRO,
                                             MSG_PROMPT_GLOBAL_OUTPUT,
                                             OUTPUT_LIST,
                                             MSG_PROMPT_SERVER,
+                                            MSG_PROMPT_CONFIG_ENTITLEMENTS_URL,
                                             MSG_PROMPT_FILE_URL,
                                             MSG_PROMPT_SCHEMA_URL,
                                             MSG_PROMPT_SEARCH_URL,
@@ -158,6 +160,9 @@ def _configure_connection(config):  # noqa C901
                                                                                    fallback=3))
     server = _prompt_default_from_config(MSG_PROMPT_SERVER, config,
                                          CONFIG_SERVER)
+
+    entitlements_url = _prompt_default_from_config(MSG_PROMPT_CONFIG_ENTITLEMENTS_URL, config,
+                                                   CONFIG_ENTITLEMENTS_URL, fallback='/api/entitlements/v2/')
     file_url = _prompt_default_from_config(MSG_PROMPT_FILE_URL, config,
                                            CONFIG_FILE_URL, fallback='/api/file/v2/')
     schema_url = _prompt_default_from_config(MSG_PROMPT_SCHEMA_URL, config,
@@ -185,6 +190,8 @@ def _configure_connection(config):  # noqa C901
 
     if server != '':
         config.set_value('core', CONFIG_SERVER, server)
+    if entitlements_url != '':
+        config.set_value('core', CONFIG_ENTITLEMENTS_URL, entitlements_url)
     if file_url != '':
         config.set_value('core', CONFIG_FILE_URL, file_url)
     if schema_url != '':

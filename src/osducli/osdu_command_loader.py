@@ -70,6 +70,18 @@ class OsduCommandLoader(CLICommandsLoader):
             group.command('update', 'update')
             group.command('set-default', 'set_default')
 
+        with CommandGroup(self, 'entitlements members', self.command_group_module('entitlements')) as group:
+            group.command('add', 'add_member')
+            group.command('list', 'list_group_members', table_transformer='members[*]')
+
+        with CommandGroup(self, 'entitlements groups', self.command_group_module('entitlements')) as group:
+            group.command('add', 'add_group')
+            group.command('delete', 'delete_group')
+            group.command('members', 'list_group_members', table_transformer='members[*]')
+
+        with CommandGroup(self, 'entitlements mygroups', self.command_group_module('entitlements')) as group:
+            group.command('', 'list_my_groups', table_transformer='groups[*]')
+
         with CommandGroup(self, 'list', self.command_group_module('list')) as group:
             group.command('records', 'records', table_transformer=dont_order_columns_table_transformer)
 
@@ -113,6 +125,12 @@ class OsduCommandLoader(CLICommandsLoader):
                                  help='Path to a file containing run ids to get status of (see dataload ingest -h).')
             arg_context.argument('batch_size', type=str, options_list=('-b', '--batch'),
                                  help='Batch size')
+
+        with ArgumentsContext(self, 'entitlements members') as arg_context:
+            arg_context.argument('member', type=str, options_list=('-m', '--member'),
+                                 help='The email of the member to be added.')
+            arg_context.argument('group', type=str, options_list=('-g', '--group'),
+                                 help='The email of the group.')
 
         # When the options_list is provided either for this timeout or the global timeout, the text
         # in the help file is ignored, so we are putting the help text here instead.

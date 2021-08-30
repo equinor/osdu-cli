@@ -11,6 +11,7 @@ from configparser import NoOptionError, NoSectionError
 from typing import Tuple, Union
 from urllib.parse import urljoin
 
+from functools import wraps
 import requests
 from knack.log import get_logger
 
@@ -34,6 +35,26 @@ MSG_HTTP_ERROR = 'Unable to access the api. Try running again with the --debug c
                  ' more information'
 
 logger = get_logger(__name__)
+
+
+def handle_cli_exceptions(function):
+    """Decorator to provide common cli error handling"""
+    @wraps(function)
+    def decorated(*args, **kwargs):
+        try:
+            return function(*args, **kwargs)
+        except HTTPError as ex:
+            logger.error(MSG_HTTP_ERROR)
+            logger.error("Error (%s) - %s", ex.response.status_code, ex.response.reason)
+        except ValueError as ex:
+            logger.error(MSG_JSON_DECODE_ERROR)
+            logger.debug(ex)
+        except (NoOptionError, NoSectionError) as ex:
+            logger.warning(
+                "Configuration missing from config ('%s'). Run 'osducli config update'", ex.args[0])
+        sys.exit(1)
+
+    return decorated
 
 
 class CliOsduClient(OsduClient):
@@ -117,9 +138,15 @@ class CliOsduClient(OsduClient):
         response = self.cli_get(config_url_key, url_extra_path)
         try:
             return response.json()
+        except HTTPError as ex:
+            logger.error(MSG_HTTP_ERROR)
+            logger.error("Error (%s) - %s", ex.response.status_code, ex.response.reason)
         except ValueError as ex:
             logger.error(MSG_JSON_DECODE_ERROR)
             logger.debug(ex)
+        except (NoOptionError, NoSectionError) as ex:
+            logger.warning(
+                "Configuration missing from config ('%s'). Run 'osducli config update'", ex.args[0])
 
         sys.exit(1)
 
@@ -143,6 +170,9 @@ class CliOsduClient(OsduClient):
         except ValueError as ex:
             logger.error(MSG_JSON_DECODE_ERROR)
             logger.debug(ex)
+        except (NoOptionError, NoSectionError) as ex:
+            logger.warning(
+                "Configuration missing from config ('%s'). Run 'osducli config update'", ex.args[0])
 
         sys.exit(1)
 
@@ -202,5 +232,8 @@ class CliOsduClient(OsduClient):
         except ValueError as ex:
             logger.error(MSG_JSON_DECODE_ERROR)
             logger.debug(ex)
+        except (NoOptionError, NoSectionError) as ex:
+            logger.warning(
+                "Configuration missing from config ('%s'). Run 'osducli config update'", ex.args[0])
 
         sys.exit(1)

@@ -16,6 +16,7 @@ CLI_CONFIG_DIR = os.path.expanduser(os.path.join('~', '.{0}'.format(CLI_NAME)))
 CLI_ENV_VAR_PREFIX = CLI_NAME
 
 CONFIG_SERVER = 'server'
+CONFIG_ENTITLEMENTS_URL = 'entitlements_url'
 CONFIG_FILE_URL = 'file_url'
 CONFIG_SCHEMA_URL = 'schema_url'
 CONFIG_SEARCH_URL = 'search_url'
