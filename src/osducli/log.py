@@ -18,6 +18,12 @@ LOG_FILE_ENCODING = "utf-8"
 
 
 class CliLogLevel(IntEnum):
+    """[summary]
+
+    Args:
+        IntEnum ([type]): [description]
+    """
+
     CRITICAL = 0
     ERROR = 1
     WARNING = 2

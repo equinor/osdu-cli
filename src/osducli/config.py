@@ -41,8 +41,11 @@ CONFIG_REFRESH_TOKEN = "refresh_token"
 CONFIG_CLIENT_ID = "client_id"
 CONFIG_CLIENT_SECRET = "client_secret"
 
+# TO DO: Add the below back in
+# pylint: disable=C0115, C0116
 
-class CLIConfig(object):
+
+class CLIConfig:
     _BOOLEAN_STATES = {
         "1": True,
         "yes": True,

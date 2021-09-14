@@ -4,43 +4,37 @@
 # license information.
 # -----------------------------------------------------------------------------
 
-"""version command"""
-
-import sys
+"""Entitlements groups add command"""
 
 import click
+from osdu.entitlements import EntitlementsClient
 
-import osducli
-from osducli.click_cli import global_params
-from osducli.cliclient import handle_cli_exceptions
+from osducli.click_cli import State, command_with_output
+from osducli.cliclient import CliOsduClient, handle_cli_exceptions
 
 
 # click entry point
 @click.command()
-@global_params
+@click.option("-g", "--group", help="Email address of the group", required=True)
 @handle_cli_exceptions
-def _click_command(_):
-    """Version information"""
-    version()
+@command_with_output("")
+def _click_command(state: State, group: str):
+    """Add a group."""
+    return add_group(state, group)
 
 
-def get_runtime_version() -> str:
-    """Get the runtime information.
+def add_group(state: State, group: str) -> dict:
+    """Add a group
+
+    Args:
+        state (State): Global state
+        group (str): Email address of the group
 
     Returns:
-        str: Runtime information
+        dict: Response from service
     """
-    import platform
+    connection = CliOsduClient(state.config)
 
-    version_info = "\n\n"
-    version_info += "Python ({}) {}".format(platform.system(), sys.version)
-    version_info += "\n\n"
-    version_info += "Python location '{}'".format(sys.executable)
-    return version_info
-
-
-def version():
-    """Print version information to standard system out."""
-    version_info = f"OSDU Cli Version {osducli.__VERSION__}"
-    version_info += get_runtime_version()
-    print(version_info)
+    entitlements_client = EntitlementsClient(connection)
+    json_response = entitlements_client.add_group(group)
+    return json_response

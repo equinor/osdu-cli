@@ -4,9 +4,18 @@
 # license information.
 # -----------------------------------------------------------------------------
 
-"""Custom cluster upgrade specific commands"""
+"""Version command"""
+
+import click
+
+from osducli.click_cli import global_params
+from osducli.cliclient import handle_cli_exceptions
 
 
-def version():
-    """Create a monitoring policy description for an upgrade"""
-    print("NOT IMPLEMENTED - DUMMY CODE / NOT VALID CALL")
+# click entry point
+@click.command()
+@handle_cli_exceptions
+@global_params
+def _click_command(_):
+    """Coming soon"""
+    print("TODO - coming soon")

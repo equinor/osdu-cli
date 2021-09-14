@@ -5,40 +5,35 @@
 # -----------------------------------------------------------------------------
 
 """Custom cluster upgrade specific commands"""
-import logging
-from collections import OrderedDict
-from enum import IntEnum
-
 import click
 
-from osducli.click_cli import global_params
+from osducli.click_cli import State, command_with_output
 from osducli.cliclient import CliOsduClient, handle_cli_exceptions
 from osducli.config import CONFIG_SEARCH_URL
-from osducli.log import get_logger
 
 
 @click.command()
-@global_params
 @handle_cli_exceptions
-def _click_command(state):
+@command_with_output(None)
+def _click_command(state: State):
     """List count of populated records"""
 
-    records()
+    records(state)
 
 
-def records():
+def records(state: State):
     """[summary]
 
     Args:
-        timeout (int, optional): [description]. Defaults to 60.
+        state (State): Global state
     """
     request_data = {"kind": "*:*:*:*", "limit": 1, "query": "*", "aggregateBy": "kind"}
 
-    connection = CliOsduClient()
+    connection = CliOsduClient(state.config)
     json_response = connection.cli_post_returning_json(CONFIG_SEARCH_URL, "query", request_data)
 
-    services = [
-        OrderedDict([("Kind", record["key"]), ("Count", record["count"])])
-        for record in json_response["aggregations"]
-    ]
-    return services
+    # services = [
+    #     OrderedDict([("Kind", record["key"]), ("Count", record["count"])])
+    #     for record in json_response["aggregations"]
+    # ]
+    return json_response

@@ -4,32 +4,35 @@
 # license information.
 # -----------------------------------------------------------------------------
 
-"""version command"""
-
-import sys
+"""Entitlements my groups command"""
 
 import click
 from osdu.entitlements import EntitlementsClient
 
-import osducli
-from osducli.click_cli import global_params
+from osducli.click_cli import State, command_with_output
 from osducli.cliclient import CliOsduClient, handle_cli_exceptions
 
 
 # click entry point
 @click.command()
-@global_params
 @handle_cli_exceptions
-def _click_command(state):
-    """Version information"""
+@command_with_output("groups[*]")
+def _click_command(state: State):
+    """List groups you have access to."""
     return list_my_groups(state)
 
 
-def list_my_groups(state):
+def list_my_groups(state: State) -> dict:
+    """Get the calling users groups
 
-    connection = CliOsduClient()
+    Args:
+        state (State): Global state
+
+    Returns:
+        dict: Response from service
+    """
+    connection = CliOsduClient(state.config)
 
     entitlements_client = EntitlementsClient(connection)
     json_response = entitlements_client.list_groups()
-    state.jmes = "groups[name]"
     return json_response

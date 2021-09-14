@@ -4,7 +4,7 @@
 # license information.
 # -----------------------------------------------------------------------------
 
-"""Entitlements my groups command"""
+"""Entitlements groups members command"""
 
 import click
 from osdu.entitlements import EntitlementsClient
@@ -15,21 +15,19 @@ from osducli.cliclient import CliOsduClient, handle_cli_exceptions
 
 # click entry point
 @click.command()
-@click.option("-m", "--member", help="Email of the member to be added.", required=True)
 @click.option("-g", "--group", help="Email address of the group", required=True)
 @handle_cli_exceptions
-@command_with_output(None)
-def _click_command(state: State, member: str, group: str):
-    """Add members to a group."""
-    return add_member(state, member, group)
+@command_with_output("members[*]")
+def _click_command(state: State, group: str):
+    """List members in a group."""
+    return list_group_members(state, group)
 
 
-def add_member(state: State, member: str, group: str) -> dict:
-    """Add members to a group.
+def list_group_members(state: State, group: str) -> dict:
+    """Delete members from a group
 
     Args:
         state (State): Global state
-        member (str): Email address of the member
         group (str): Email address of the group
 
     Returns:
@@ -38,5 +36,5 @@ def add_member(state: State, member: str, group: str) -> dict:
     connection = CliOsduClient(state.config)
 
     entitlements_client = EntitlementsClient(connection)
-    json_response = entitlements_client.add_member_to_group(member, group)
+    json_response = entitlements_client.list_group_members(group)
     return json_response

@@ -4,7 +4,7 @@
 # license information.
 # -----------------------------------------------------------------------------
 
-"""version command"""
+"""Version command"""
 
 import sys
 
@@ -17,8 +17,8 @@ from osducli.cliclient import handle_cli_exceptions
 
 # click entry point
 @click.command()
-@global_params
 @handle_cli_exceptions
+@global_params
 def _click_command(_):
     """Version information"""
     version()

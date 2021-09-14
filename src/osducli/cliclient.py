@@ -18,19 +18,12 @@ from osdu.client import OsduClient
 from osdu.identity import OsduMsalInteractiveCredential, OsduTokenCredential
 from requests.models import HTTPError
 
-from osducli.config import (
-    CLI_CONFIG_DIR,
-    CONFIG_AUTHENTICATION_AUTHORITY,
-    CONFIG_AUTHENTICATION_MODE,
-    CONFIG_AUTHENTICATION_SCOPES,
-    CONFIG_CLIENT_ID,
-    CONFIG_CLIENT_SECRET,
-    CONFIG_DATA_PARTITION_ID,
-    CONFIG_REFRESH_TOKEN,
-    CONFIG_SERVER,
-    CONFIG_TOKEN_ENDPOINT,
-    CLIConfig,
-)
+from osducli.config import (CLI_CONFIG_DIR, CONFIG_AUTHENTICATION_AUTHORITY,
+                            CONFIG_AUTHENTICATION_MODE,
+                            CONFIG_AUTHENTICATION_SCOPES, CONFIG_CLIENT_ID,
+                            CONFIG_CLIENT_SECRET, CONFIG_DATA_PARTITION_ID,
+                            CONFIG_REFRESH_TOKEN, CONFIG_SERVER,
+                            CONFIG_TOKEN_ENDPOINT, CLIConfig)
 
 MSG_JSON_DECODE_ERROR = (
     "Unable to decode the response. Try running again with the --debug command line argument for"

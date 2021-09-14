@@ -9,7 +9,8 @@
 import os
 from os import path
 
-from osducli.config import CLI_CONFIG_DIR, CLI_ENV_VAR_PREFIX, CLI_NAME, CLIConfig
+from osducli.config import (CLI_CONFIG_DIR, CLI_ENV_VAR_PREFIX, CLI_NAME,
+                            CLIConfig)
 
 # knack CLIConfig has all the functionality needed to keep track of state, so we are using that
 # here to prevent code duplication. We are using CLIConfig to create a file called 'state' to

@@ -4,26 +4,32 @@
 # license information.
 # -----------------------------------------------------------------------------
 
-"""Custom cluster upgrade specific commands"""
+"""Search service query command"""
 
+import click
 from osdu.search import SearchClient
 
+from osducli.click_cli import State, command_with_output
 from osducli.cliclient import CliOsduClient, handle_cli_exceptions
 
 
-def version():
-    """Search service"""
-    print("NOT IMPLEMENTED - DUMMY CODE / NOT VALID CALL")
-
-
+# click entry point
+@click.command()
+@click.option("-id", "--id", "_id")
 @handle_cli_exceptions
-def query(id: str):  #  TO FIX later pylint: disable=invalid-name,redefined-builtin
+@command_with_output(None)
+def _click_command(state: State, _id: str):
+    """Query search service"""
+    return query(state, _id)
+
+
+def query(state: State, id: str):  # TO FIX later pylint: disable=invalid-name,redefined-builtin
     """[summary]
 
     Args:
-        timeout (int, optional): [description]. Defaults to 60.
+        state (State): Global state
     """
-    connection = CliOsduClient()
+    connection = CliOsduClient(state.config)
 
     search_client = SearchClient(connection)
     json_response = search_client.query_by_id(id)

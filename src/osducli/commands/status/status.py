@@ -6,9 +6,6 @@
 
 """Code to handle status commands"""
 
-import logging
-from http.client import HTTPConnection
-
 import click
 from requests.models import HTTPError
 
@@ -22,24 +19,22 @@ from osducli.config import (
     CONFIG_UNIT_URL,
     CONFIG_WORKFLOW_URL,
 )
-from osducli.log import get_logger
 
 
 @click.command()
-@global_params
 @handle_cli_exceptions
+@global_params
 def _click_command(state):
     # def _click_command(ctx, debug, config, hostname):
     """Shows the status of OSDU services"""
     status(state)
-    return None, None
 
 
 def status(state):  # pylint: disable=unused-argument
     """status command entry point
 
-    Returns:
-        [type]: [description]
+    Args:
+        state (State): Global state
     """
     connection = CliOsduClient(state.config)
     # HTTPConnection.debuglevel = 1

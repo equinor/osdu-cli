@@ -4,4 +4,4 @@
 # license information.
 # -----------------------------------------------------------------------------
 
-"""Information about OSDU contents."""
+"""List different types of information."""
