@@ -4,4 +4,9 @@
 # license information.
 # -----------------------------------------------------------------------------
 
-"""Information about OSDU contents."""
+"""Custom cluster upgrade specific commands"""
+
+
+def version():
+    """Workflow service"""
+    print("NOT IMPLEMENTED - DUMMY CODE / NOT VALID CALL")

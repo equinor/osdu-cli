@@ -8,10 +8,9 @@
 
 from knack.help_files import helps
 
-
 helps['entitlements'] = """
     type: group
-    short-summary: Manage entitlements
+    short-summary: entitlements service
 """
 
 helps['entitlements groups'] = """

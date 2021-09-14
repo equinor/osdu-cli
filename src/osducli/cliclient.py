@@ -8,37 +8,45 @@
 import os
 import sys
 from configparser import NoOptionError, NoSectionError
+from functools import wraps
 from typing import Tuple, Union
 from urllib.parse import urljoin
 
-from functools import wraps
 import requests
 from knack.log import get_logger
-
 from osdu.client import OsduClient
-from osdu.identity import OsduTokenCredential, OsduMsalInteractiveCredential
+from osdu.identity import OsduMsalInteractiveCredential, OsduTokenCredential
 from requests.models import HTTPError
-from osducli.config import get_config_int, get_config_value, CLI_CONFIG_DIR
-from osducli.config import (CONFIG_SERVER,
-                            CONFIG_DATA_PARTITION_ID,
-                            CONFIG_AUTHENTICATION_MODE,
-                            CONFIG_CLIENT_ID,
-                            CONFIG_TOKEN_ENDPOINT,
-                            CONFIG_REFRESH_TOKEN,
-                            CONFIG_CLIENT_SECRET,
-                            CONFIG_AUTHENTICATION_AUTHORITY,
-                            CONFIG_AUTHENTICATION_SCOPES)
 
-MSG_JSON_DECODE_ERROR = 'Unable to decode the response. Try running again with the --debug command line argument for'\
-                        ' more information'
-MSG_HTTP_ERROR = 'Unable to access the api. Try running again with the --debug command line argument for'\
-                 ' more information'
+from osducli.config import (
+    CLI_CONFIG_DIR,
+    CONFIG_AUTHENTICATION_AUTHORITY,
+    CONFIG_AUTHENTICATION_MODE,
+    CONFIG_AUTHENTICATION_SCOPES,
+    CONFIG_CLIENT_ID,
+    CONFIG_CLIENT_SECRET,
+    CONFIG_DATA_PARTITION_ID,
+    CONFIG_REFRESH_TOKEN,
+    CONFIG_SERVER,
+    CONFIG_TOKEN_ENDPOINT,
+    CLIConfig,
+)
+
+MSG_JSON_DECODE_ERROR = (
+    "Unable to decode the response. Try running again with the --debug command line argument for"
+    " more information"
+)
+MSG_HTTP_ERROR = (
+    "Unable to access the api. Try running again with the --debug command line argument for"
+    " more information"
+)
 
 logger = get_logger(__name__)
 
 
 def handle_cli_exceptions(function):
     """Decorator to provide common cli error handling"""
+
     @wraps(function)
     def decorated(*args, **kwargs):
         try:
@@ -51,7 +59,8 @@ def handle_cli_exceptions(function):
             logger.debug(ex)
         except (NoOptionError, NoSectionError) as ex:
             logger.warning(
-                "Configuration missing from config ('%s'). Run 'osducli config update'", ex.args[0])
+                "Configuration missing from config ('%s'). Run 'osducli config update'", ex.args[0]
+            )
         sys.exit(1)
 
     return decorated
@@ -65,68 +74,76 @@ class CliOsduClient(OsduClient):
         OsduClient ([type]): [description]
     """
 
-    def __init__(self):
+    def __init__(self, config: CLIConfig):
         """Setup the new client
 
         Args:
-            server_url (str): url of the server without any path e.g. https://www.test.com
-            data_partition (str): data partition name e.g. opendes
-            credentials (OsduBaseCredential): credentials used for connection
-            retries (int): number of retries incase of http errors (default 0 - no retries)
+            config (CLIConfig): cli configuration
         """
+
+        self.config = config
 
         try:
             # required
-            server = get_config_value(CONFIG_SERVER, 'core')
-            data_partition = get_config_value(CONFIG_DATA_PARTITION_ID, 'core')
-            retries = get_config_int("retries", "core", 0)
-            authentication_mode = get_config_value(CONFIG_AUTHENTICATION_MODE, "core")
+            server = config.get("core", CONFIG_SERVER)
+            data_partition = config.get("core", CONFIG_DATA_PARTITION_ID)
+            retries = config.getint("core", "retries", 0)
+            authentication_mode = config.get("core", CONFIG_AUTHENTICATION_MODE)
 
             if authentication_mode == "refresh_token":
-                client_id = get_config_value(CONFIG_CLIENT_ID, "core")
-                token_endpoint = get_config_value(CONFIG_TOKEN_ENDPOINT, "core", None)
-                refresh_token = get_config_value(CONFIG_REFRESH_TOKEN, "core", None)
-                client_secret = get_config_value(CONFIG_CLIENT_SECRET, "core", None)
-                credentials = OsduTokenCredential(client_id, token_endpoint, refresh_token, client_secret)
+                client_id = config.get("core", CONFIG_CLIENT_ID)
+                token_endpoint = config.get("core", CONFIG_TOKEN_ENDPOINT, None)
+                refresh_token = config.get("core", CONFIG_REFRESH_TOKEN, None)
+                client_secret = config.get("core", CONFIG_CLIENT_SECRET, None)
+                credentials = OsduTokenCredential(
+                    client_id, token_endpoint, refresh_token, client_secret
+                )
             elif authentication_mode == "msal_interactive":
-                client_id = get_config_value(CONFIG_CLIENT_ID, "core")
-                authority = get_config_value(CONFIG_AUTHENTICATION_AUTHORITY, "core", None)
-                scopes = get_config_value(CONFIG_AUTHENTICATION_SCOPES, "core", None)
-                cache_path = os.path.join(CLI_CONFIG_DIR, 'msal_token_cache.bin')
-                credentials = OsduMsalInteractiveCredential(client_id, authority, scopes, cache_path)
+                client_id = config.get("core", CONFIG_CLIENT_ID)
+                authority = config.get("core", CONFIG_AUTHENTICATION_AUTHORITY, None)
+                scopes = config.get("core", CONFIG_AUTHENTICATION_SCOPES, None)
+                cache_path = os.path.join(CLI_CONFIG_DIR, "msal_token_cache.bin")
+                credentials = OsduMsalInteractiveCredential(
+                    client_id, authority, scopes, cache_path
+                )
             else:
-                logger.error("Unknown type of authentication mode %s. Run 'osducli config update'.",
-                             authentication_mode)
+                logger.error(
+                    "Unknown type of authentication mode %s. Run 'osducli config update'.",
+                    authentication_mode,
+                )
                 sys.exit(2)
 
             super().__init__(server, data_partition, credentials, retries)
         except (NoOptionError, NoSectionError) as ex:
             logger.warning(
-                "Authentication information missing from config ('%s'). Run 'osducli config update'", ex.args[0])
+                "Authentication information missing from config ('%s'). Run 'osducli config update'",
+                ex.args[0],
+            )
             sys.exit(1)
 
     def _url_from_config(self, config_url_key: str, url_extra_path: str) -> str:
         """Construct a url using values from configuration"""
-        unit_url = get_config_value(config_url_key, 'core')
+        unit_url = self.config.get("core", config_url_key)
         url = urljoin(self.server_url, unit_url) + url_extra_path
         return url
 
-    def cli_get(self, config_url_key: str, url_extra_path: str) -> requests.Response:
+    def cli_get(
+        self, config_url_key: str, url_extra_path: str, ok_status_codes: list = None
+    ) -> requests.Response:
         """[summary]
 
         Args:
             config_url_key (str): key in configuration for the base path
             url_extra_path (str): extra path to add to the base path
+            ok_status_codes (list, optional): Status codes for successful call. Defaults to [200].
         """
         url = self._url_from_config(config_url_key, url_extra_path)
+        if ok_status_codes is None:
+            ok_status_codes = [200]
         response = self.get(url)
-        if response.status_code in [200]:
-            return response
-
-        logger.error(MSG_HTTP_ERROR)
-        logger.error("Error (%s) - %s", response.status_code, response.reason)
-
-        sys.exit(1)
+        if response.status_code not in ok_status_codes:
+            raise HTTPError(response=response)
+        return response
 
     def cli_get_returning_json(self, config_url_key: str, url_extra_path: str) -> dict:
         """[summary]
@@ -146,11 +163,14 @@ class CliOsduClient(OsduClient):
             logger.debug(ex)
         except (NoOptionError, NoSectionError) as ex:
             logger.warning(
-                "Configuration missing from config ('%s'). Run 'osducli config update'", ex.args[0])
+                "Configuration missing from config ('%s'). Run 'osducli config update'", ex.args[0]
+            )
 
         sys.exit(1)
 
-    def cli_post_returning_json(self, config_url_key: str, url_extra_path: str, data: Union[str, dict]):
+    def cli_post_returning_json(
+        self, config_url_key: str, url_extra_path: str, data: Union[str, dict]
+    ):
         """[summary]
 
         Args:
@@ -172,7 +192,8 @@ class CliOsduClient(OsduClient):
             logger.debug(ex)
         except (NoOptionError, NoSectionError) as ex:
             logger.warning(
-                "Configuration missing from config ('%s'). Run 'osducli config update'", ex.args[0])
+                "Configuration missing from config ('%s'). Run 'osducli config update'", ex.args[0]
+            )
 
         sys.exit(1)
 
@@ -205,11 +226,13 @@ class CliOsduClient(OsduClient):
         #         logger.error(f"Unexpected request error. Reason: {exc}")
         #         sys.exit(2)
 
-    def cli_put(self,
-                url: str,
-                # config_url_key: str,
-                # url_extra_path: str,
-                filepath: str) -> Tuple[requests.Response, dict]:
+    def cli_put(
+        self,
+        url: str,
+        # config_url_key: str,
+        # url_extra_path: str,
+        filepath: str,
+    ) -> Tuple[requests.Response, dict]:
         """PUT the file at the given path to the given url.
         Includes common CLI specific error handling
 
@@ -234,6 +257,7 @@ class CliOsduClient(OsduClient):
             logger.debug(ex)
         except (NoOptionError, NoSectionError) as ex:
             logger.warning(
-                "Configuration missing from config ('%s'). Run 'osducli config update'", ex.args[0])
+                "Configuration missing from config ('%s'). Run 'osducli config update'", ex.args[0]
+            )
 
         sys.exit(1)

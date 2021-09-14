@@ -6,15 +6,23 @@
 
 """Custom commands for the dataload"""
 
-import os
 import json
+import os
 import sys
 import time
-from knack.log import get_logger
-from osducli.config import CONFIG_SEARCH_URL, get_config_value
-from osducli.config import CONFIG_WORKFLOW_URL, CONFIG_FILE_URL, CONFIG_LEGAL_TAG, CONFIG_ACL_VIEWER, CONFIG_ACL_OWNER
 
-from osducli.cliclient import CliOsduClient
+from knack.log import get_logger
+
+from osducli.cliclient import CliOsduClient, handle_cli_exceptions
+from osducli.config import (
+    CONFIG_ACL_OWNER,
+    CONFIG_ACL_VIEWER,
+    CONFIG_DATA_PARTITION_ID,
+    CONFIG_FILE_URL,
+    CONFIG_LEGAL_TAG,
+    CONFIG_SEARCH_URL,
+    CONFIG_WORKFLOW_URL,
+)
 
 START_TIME = "startTimeStamp"
 END_TIME = "endTimeStamp"
@@ -32,12 +40,9 @@ def _populate_request_body(data, data_type):
         "executionContext": {
             "Payload": {
                 "AppKey": "test-app",
-                "data-partition-id": get_config_value("data-partition-id", "core")
+                "data-partition-id": get_config_value(CONFIG_DATA_PARTITION_ID, "core"),
             },
-            "manifest": {
-                "kind": "osdu:wks:Manifest:1.0.0",
-                data_type: data
-            }
+            "manifest": {"kind": "osdu:wks:Manifest:1.0.0", data_type: data},
         }
     }
     logger.info("Request to be sent %s", request)
@@ -46,8 +51,9 @@ def _populate_request_body(data, data_type):
 
 def _upload_file(filepath):
     connection = CliOsduClient()
-    initiate_upload_response_json = connection.cli_get_returning_json(CONFIG_FILE_URL,
-                                                                      'files/uploadURL')
+    initiate_upload_response_json = connection.cli_get_returning_json(
+        CONFIG_FILE_URL, "files/uploadURL"
+    )
 
     location = initiate_upload_response_json.get("Location")
     if location:
@@ -71,12 +77,18 @@ def _update_work_products_metadata(data, files):
     # if files is specified then upload any needed data.
     if files:
         for dataset in data.get("Datasets"):
-            file_source_info = dataset.get("data", {}).get("DatasetProperties", {}).get("FileSourceInfo")
+            file_source_info = (
+                dataset.get("data", {}).get("DatasetProperties", {}).get("FileSourceInfo")
+            )
             # only process if FileSource isn't already specified
             if file_source_info and not file_source_info.get("FileSource"):
-                file_source_info["FileSource"] = _upload_file(os.path.join(files, file_source_info["Name"]))
+                file_source_info["FileSource"] = _upload_file(
+                    os.path.join(files, file_source_info["Name"])
+                )
             else:
-                logger.info("FileSource already especified for '%s' - skipping.", file_source_info['Name'])
+                logger.info(
+                    "FileSource already especified for '%s' - skipping.", file_source_info["Name"]
+                )
 
     # TO DO: Here we scan by name from filemap
     # with open(file_location_map) as file:
@@ -115,7 +127,10 @@ def _update_legal_and_acl_tags(datum):
     datum["acl"]["owners"] = [get_config_value(CONFIG_ACL_OWNER, "core")]
 
 
-def ingest(path: str, files: str = None, runid_log: str = None, batch_size: int = 1):  # file_location_map=""):
+@handle_cli_exceptions
+def ingest(
+    path: str, files: str = None, runid_log: str = None, batch_size: int = 1
+):  # file_location_map=""):
     """Ingest files into OSDU"""
 
     allfiles = []
@@ -140,7 +155,7 @@ def _ingest_files(allfiles, files, runid_log, batch_size):  # noqa: C901 pylint:
     try:
         if runid_log is not None:
             # clear existing logs
-            runid_log_handle = open(runid_log, 'w')  # pylint: disable=R1732
+            runid_log_handle = open(runid_log, "w")  # pylint: disable=R1732
 
         cur_batch = 0
         data_objects = []
@@ -170,7 +185,11 @@ def _ingest_files(allfiles, files, runid_log, batch_size):  # noqa: C901 pylint:
                 cur_batch = 0
                 data_objects = []
             else:
-                logger.info("Current batch size after process %s is %s. Reading more files..", filepath, cur_batch)
+                logger.info(
+                    "Current batch size after process %s is %s. Reading more files..",
+                    filepath,
+                    cur_batch,
+                )
 
         if cur_batch > 0:
             logger.info("Ingesting remaining records %s", cur_batch)
@@ -184,13 +203,13 @@ def _ingest_files(allfiles, files, runid_log, batch_size):  # noqa: C901 pylint:
 def _ingest_send_batch(runids, runid_log_handle, data_objects, data_type):
     request_data = _populate_request_body(data_objects, data_type)
     connection = CliOsduClient()
-    response_json = connection.cli_post_returning_json(CONFIG_WORKFLOW_URL,
-                                                       'workflow/Osdu_ingest/workflowRun',
-                                                       request_data)
-    runid = response_json.get('runId')
+    response_json = connection.cli_post_returning_json(
+        CONFIG_WORKFLOW_URL, "workflow/Osdu_ingest/workflowRun", request_data
+    )
+    runid = response_json.get("runId")
     logger.info("Returned runID: %s", runid)
     if runid_log_handle:
-        runid_log_handle.write(f'{runid}\n')
+        runid_log_handle.write(f"{runid}\n")
     runids.append(runid)
 
 
@@ -201,29 +220,30 @@ def _status_check(run_id_list: list):
     for run_id in run_id_list:
         connection = CliOsduClient()
         response_json = connection.cli_get_returning_json(
-            CONFIG_WORKFLOW_URL, 'workflow/Osdu_ingest/workflowRun/' + run_id)
+            CONFIG_WORKFLOW_URL, "workflow/Osdu_ingest/workflowRun/" + run_id
+        )
         if response_json is not None:
             run_status = response_json.get(STATUS)
             if run_status == "running":
-                results.append({
-                    RUN_ID: run_id,
-                    STATUS: run_status})
+                results.append({RUN_ID: run_id, STATUS: run_status})
             else:
                 time_taken = response_json.get(END_TIME) - response_json.get(START_TIME)
-                results.append({
-                    RUN_ID: run_id,
-                    END_TIME: response_json.get(END_TIME),
-                    START_TIME: response_json.get(START_TIME),
-                    STATUS: run_status,
-                    TIME_TAKEN: time_taken / 1000})
+                results.append(
+                    {
+                        RUN_ID: run_id,
+                        END_TIME: response_json.get(END_TIME),
+                        START_TIME: response_json.get(START_TIME),
+                        STATUS: run_status,
+                        TIME_TAKEN: time_taken / 1000,
+                    }
+                )
         else:
-            results.append({
-                RUN_ID: run_id,
-                STATUS: "Unable To fetch status"})
+            results.append({RUN_ID: run_id, STATUS: "Unable To fetch status"})
 
     return results
 
 
+@handle_cli_exceptions
 def status(runid: str = None, runid_log: str = None, wait: bool = False):
     """Get status of workflow runs"""
     runids = []
@@ -245,8 +265,10 @@ def status(runid: str = None, runid_log: str = None, wait: bool = False):
             for result in results:
                 if result.get("status") == "running":
                     ingestion_complete = False
-                    logger.debug("Not all records finished. Checking again in 60s. Tried upto %s and found running",
-                                 result.get("RunId"))
+                    logger.debug(
+                        "Not all records finished. Checking again in 60s. Tried upto %s and found running",
+                        result.get("RunId"),
+                    )
                     break
 
             if ingestion_complete:
@@ -265,7 +287,7 @@ def _verify_ids(record_ids):
     logger.info("search query %s", search_query)
 
     connection = CliOsduClient()
-    response_json = connection.cli_post_returning_json(CONFIG_SEARCH_URL, 'query', search_query)
+    response_json = connection.cli_post_returning_json(CONFIG_SEARCH_URL, "query", search_query)
 
     logger.info("search response %s", response_json)
     ingested_records = response_json.get("results")
@@ -280,15 +302,11 @@ def _verify_ids(record_ids):
 
 
 def _create_search_query(record_ids):
-    final_query = " OR ".join("\"" + x + "\"" for x in record_ids)
-    return {
-        "kind": "*:*:*:*.*.*",
-        "returnedFields": ["id"],
-        "offset": 0,
-        "query": final_query
-    }
+    final_query = " OR ".join('"' + x + '"' for x in record_ids)
+    return {"kind": "*:*:*:*.*.*", "returnedFields": ["id"], "offset": 0, "query": final_query}
 
 
+@handle_cli_exceptions
 def verify(path: str, batch_size: int = 1):  # noqa: C901 pylint: disable=R0912
     """Verify if records exist in OSDU. Note that this doesn't support versioning - success indicated that
     a record is found, although there is no check of the contents so it could be an older version if you have
@@ -336,7 +354,11 @@ def verify(path: str, batch_size: int = 1):  # noqa: C901 pylint: disable=R0912
             cur_batch = 0
             record_ids = []
         else:
-            logger.info("Current batch size after process %s is %s. Reading more files..", filepath, cur_batch)
+            logger.info(
+                "Current batch size after process %s is %s. Reading more files..",
+                filepath,
+                cur_batch,
+            )
 
     if cur_batch > 0:
         logger.info("Searching remaining records with batch size %s", cur_batch)
@@ -345,7 +367,9 @@ def verify(path: str, batch_size: int = 1):  # noqa: C901 pylint: disable=R0912
         failed += _f
 
     if len(failed) == 0:
-        print(f"All {len(success)} records exist in OSDU.", )
+        print(
+            f"All {len(success)} records exist in OSDU.",
+        )
     else:
         logger.info("Number of Records that exist in OSDU: %s", len(success))
         logger.info("Record IDs that could not be ingested")
@@ -353,6 +377,7 @@ def verify(path: str, batch_size: int = 1):  # noqa: C901 pylint: disable=R0912
     # logger.info(pformat(failed))
 
 
+@handle_cli_exceptions
 def list_workflows():
     """[summary]
 
@@ -361,5 +386,5 @@ def list_workflows():
     """
     print("TODO: Should perhaps be in a workflow category")
     connection = CliOsduClient()
-    response_json = connection.cli_get_returning_json(CONFIG_WORKFLOW_URL, 'workflow?prefix=')
+    response_json = connection.cli_get_returning_json(CONFIG_WORKFLOW_URL, "workflow?prefix=")
     return response_json

@@ -6,17 +6,26 @@
 
 """Custom cluster upgrade specific commands"""
 
+from osdu.search import SearchClient
+
 from osducli.cliclient import CliOsduClient, handle_cli_exceptions
-from osducli.config import CONFIG_UNIT_URL
+
+
+def version():
+    """Search service"""
+    print("NOT IMPLEMENTED - DUMMY CODE / NOT VALID CALL")
 
 
 @handle_cli_exceptions
-def unit_list():
+def query(id: str):  #  TO FIX later pylint: disable=invalid-name,redefined-builtin
     """[summary]
 
     Args:
         timeout (int, optional): [description]. Defaults to 60.
     """
     connection = CliOsduClient()
-    json = connection.cli_get_returning_json(CONFIG_UNIT_URL, 'unit?limit=10000')
-    return json
+
+    search_client = SearchClient(connection)
+    json_response = search_client.query_by_id(id)
+
+    return json_response

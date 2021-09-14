@@ -7,14 +7,12 @@
 """TODO: Add module docstring."""
 
 from knack.help import CLIHelp
-
 from knack.help_files import helps
 
+import osducli.commands.config.help  # noqa: F401; pylint: disable=unused-import
 # Need to import so global help dict gets updated
 import osducli.commands.dataload.help  # noqa: F401; pylint: disable=unused-import
-import osducli.commands.config.help  # noqa: F401; pylint: disable=unused-import
 import osducli.commands.entitlements.help  # noqa: F401; pylint: disable=unused-import
-import osducli.commands.list.help  # noqa: F401; pylint: disable=unused-import
 import osducli.commands.status.help  # noqa: F401; pylint: disable=unused-import
 import osducli.commands.unit.help  # noqa: F401; pylint: disable=unused-import
 import osducli.commands.version.help  # noqa: F401; pylint: disable=unused-import
@@ -37,7 +35,9 @@ Available Commands:
 """
 
 # main help team
-helps[''] = """
+helps[
+    ""
+] = """
     type: group
     short-summary: Commands for managing OSDU.
     long-summary: Commands follow the noun-verb pattern. See subgroups for more

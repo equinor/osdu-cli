@@ -9,18 +9,22 @@
 Handles creating and launching a CLI to handle a user command."""
 
 import sys
+
 from knack.invocation import CommandInvoker
 from knack.util import CommandResultItem
+
+from osducli.click_cli import cli
 from osducli.config import CLI_CONFIG_DIR, CLI_ENV_VAR_PREFIX, CLI_NAME
 from osducli.osdu_cli import OsduCli
-from osducli.osdu_command_loader import OsduCommandLoader
 from osducli.osdu_command_help import OsduCommandHelp
+from osducli.osdu_command_loader import OsduCommandLoader
 
 # from osducli.util import is_help_command
 
 
 class OsduInvoker(CommandInvoker):  # pylint: disable=too-few-public-methods
     """Extend Invoker to to handle when a system service is not installed (BRS/EventStore cases)."""
+
     def execute(self, args):
         try:
             return super(OsduInvoker, self).execute(args)
@@ -29,10 +33,11 @@ class OsduInvoker(CommandInvoker):  # pylint: disable=too-few-public-methods
         # 'Internal Server Error' message, but here we handle the case where gateway is unable
         # to find the service.
         except TypeError:
-            if args[0] == 'events':
+            if args[0] == "events":
                 from knack.log import get_logger
+
                 logger = get_logger(__name__)
-                logger.error('Service is not installed.')
+                logger.error("Service is not installed.")
                 return CommandResultItem(None, exit_code=0)
             raise
 
@@ -54,12 +59,14 @@ def main():
 
         args_list = sys.argv[1:]
 
-        osducli = OsduCli(cli_name=CLI_NAME,
-                          config_dir=CLI_CONFIG_DIR,
-                          config_env_var_prefix=CLI_ENV_VAR_PREFIX,
-                          invocation_cls=OsduInvoker,
-                          commands_loader_cls=OsduCommandLoader,
-                          help_cls=OsduCommandHelp)
+        osducli = OsduCli(
+            cli_name=CLI_NAME,
+            config_dir=CLI_CONFIG_DIR,
+            config_env_var_prefix=CLI_ENV_VAR_PREFIX,
+            invocation_cls=OsduInvoker,
+            commands_loader_cls=OsduCommandLoader,
+            help_cls=OsduCommandHelp,
+        )
 
         # osducli.register_event(OsduCli.events.EVENT_PARSER_GLOBAL_CREATE, lambda:  OutputProducer.on_global_arguments)
         # osducli.register_event(OsduCli.events.EVENT_INVOKER_POST_PARSE_ARGS, OutputProducer.handle_output_argument)
@@ -75,4 +82,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    cli(obj={})

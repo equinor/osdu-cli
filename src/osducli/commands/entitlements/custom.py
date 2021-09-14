@@ -6,6 +6,7 @@
 
 """Custom cluster upgrade specific commands"""
 from osdu.entitlements import EntitlementsClient
+
 from osducli.cliclient import CliOsduClient, handle_cli_exceptions
 
 

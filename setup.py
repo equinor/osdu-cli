@@ -24,45 +24,39 @@ def read(fname):
     return open(join(osducli_path, fname)).read()
 
 
-version_file = read(os.path.join('src', 'osducli', '__init__.py'))
-__VERSION__ = re.search(r'^__VERSION__\s*=\s*[\'"]([^\'"]*)[\'"]',
-                        version_file, re.MULTILINE).group(1)
+version_file = read(os.path.join("src", "osducli", "__init__.py"))
+__VERSION__ = re.search(
+    r'^__VERSION__\s*=\s*[\'"]([^\'"]*)[\'"]', version_file, re.MULTILINE
+).group(1)
 
 setup(
-    name='osducli',
+    name="osducli",
     version=__VERSION__,
-    description='OSDU command line',
-    long_description=read('README.rst'),
-    url='https://github.com/equinor/osdu-cli',
-    author='Equinor ASA',
-    author_email='mhew@equinor.com',
-    license='MIT',
+    description="OSDU command line",
+    long_description=read("README.rst"),
+    url="https://github.com/equinor/osdu-cli",
+    author="Equinor ASA",
+    author_email="mhew@equinor.com",
+    license="MIT",
     classifiers=[
-        'Development Status :: 5 - Production/Stable',
-        'Intended Audience :: Developers',
-        'Topic :: Software Development :: Build Tools',
-        'Environment :: Console',
-        'License :: OSI Approved :: MIT License',
-        'Natural Language :: English',
-        'Programming Language :: Python :: 3.8',
-        'Programming Language :: Python :: 3.9'
+        "Development Status :: 5 - Production/Stable",
+        "Intended Audience :: Developers",
+        "Topic :: Software Development :: Build Tools",
+        "Environment :: Console",
+        "License :: OSI Approved :: MIT License",
+        "Natural Language :: English",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
     ],
-    keywords='osdu',
-    python_requires='>=3.8',
-    packages=find_packages('src'),
-    package_dir={'': 'src'},
-    py_modules=[splitext(basename(path))[0] for path in glob('src/*.py')],
+    keywords="osdu",
+    python_requires=">=3.8",
+    packages=find_packages("src"),
+    package_dir={"": "src"},
+    py_modules=[splitext(basename(path))[0] for path in glob("src/*.py")],
     include_package_data=True,
-    install_requires=[
-        'knack==0.8.2',
-        'osdu-sdk==0.0.3',
-        'requests',
-        'msal'
-    ],
+    install_requires=["click", "osdu-sdk==0.0.3", "requests", "msal"],
     project_urls={
-        'Issue Tracker': 'https://github.com/equinor/osdu-cli/issues',
-    },    
-    entry_points={
-        'console_scripts': ['osducli=osducli.__main__:main']
-    }
+        "Issue Tracker": "https://github.com/equinor/osdu-cli/issues",
+    },
+    entry_points={"console_scripts": ["osducli=osducli.__main__:main"]},
 )

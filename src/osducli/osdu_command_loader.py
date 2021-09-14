@@ -10,8 +10,9 @@ Commands are stored as one to one mappings between command line syntax and
 python function.
 """
 
-from collections import OrderedDict
 import json
+from collections import OrderedDict
+
 from knack.arguments import ArgumentsContext, CLIArgumentType
 from knack.commands import CLICommandsLoader, CommandGroup
 
@@ -85,6 +86,12 @@ class OsduCommandLoader(CLICommandsLoader):
         with CommandGroup(self, 'list', self.command_group_module('list')) as group:
             group.command('records', 'records', table_transformer=dont_order_columns_table_transformer)
 
+        with CommandGroup(self, '', self.command_group_module('schema')) as group:
+            group.command('schema', 'version')
+
+        with CommandGroup(self, '', self.command_group_module('search')) as group:
+            group.command('search', 'query')
+
         with CommandGroup(self, '', 'osducli.commands.status.custom#status') as group:
             group.command('status', 'status', table_transformer=dont_order_columns_table_transformer)
 
@@ -93,6 +100,9 @@ class OsduCommandLoader(CLICommandsLoader):
 
         with CommandGroup(self, '', self.command_group_module('version')) as group:
             group.command('version', 'version')
+
+        with CommandGroup(self, '', self.command_group_module('workflow')) as group:
+            group.command('workflow', 'version')
 
         return OrderedDict(self.command_table)
 

@@ -7,69 +7,59 @@
 """Custom cluster upgrade specific commands"""
 import configparser
 import os
-from osducli.prompt import prompt, prompt_y_n, prompt_choice_list
-from osducli.config import get_default_from_config, get_default_choice_index_from_config
-from osducli.config import (CONFIG_SERVER,
-                            CONFIG_ENTITLEMENTS_URL,
-                            CONFIG_FILE_URL,
-                            CONFIG_SCHEMA_URL,
-                            CONFIG_SEARCH_URL,
-                            CONFIG_STORAGE_URL,
-                            CONFIG_UNIT_URL,
-                            CONFIG_WORKFLOW_URL,
-                            CONFIG_DATA_PARTITION_ID,
-                            CONFIG_LEGAL_TAG,
-                            CONFIG_ACL_VIEWER,
-                            CONFIG_ACL_OWNER,
-                            CONFIG_AUTHENTICATION_MODE,
-                            CONFIG_AUTHENTICATION_AUTHORITY,
-                            CONFIG_AUTHENTICATION_SCOPES,
-                            CONFIG_TOKEN_ENDPOINT,
-                            CONFIG_REFRESH_TOKEN,
-                            CONFIG_CLIENT_ID,
-                            CONFIG_CLIENT_SECRET,
-                            )
-from osducli.state import set_default_config_file
-from osducli.commands.config.consts import (MSG_INTRO,
-                                            MSG_CLOSING,
+
+from osducli.commands.config.consts import (AUTHENTICATION_LIST, MSG_CLOSING,
                                             MSG_GLOBAL_SETTINGS_LOCATION,
                                             MSG_HEADING_CURRENT_CONFIG_INFO,
-                                            MSG_HEADING_ENV_VARS,
+                                            MSG_HEADING_ENV_VARS, MSG_INTRO,
+                                            MSG_PROMPT_ACL_OWNER,
+                                            MSG_PROMPT_ACL_VIEWER,
+                                            MSG_PROMPT_AUTHENTICATION_MODE,
+                                            MSG_PROMPT_AUTHORITY,
+                                            MSG_PROMPT_CLIENT_ID,
+                                            MSG_PROMPT_CLIENT_SECRET,
                                             MSG_PROMPT_CONFIG,
-                                            MSG_PROMPT_MANAGE_GLOBAL,
-                                            MSG_PROMPT_GLOBAL_OUTPUT,
-                                            OUTPUT_LIST,
-                                            MSG_PROMPT_SERVER,
                                             MSG_PROMPT_CONFIG_ENTITLEMENTS_URL,
+                                            MSG_PROMPT_DATA_PARTITION,
                                             MSG_PROMPT_FILE_URL,
+                                            MSG_PROMPT_GLOBAL_OUTPUT,
+                                            MSG_PROMPT_LEGAL_TAG,
+                                            MSG_PROMPT_MANAGE_GLOBAL,
+                                            MSG_PROMPT_REFRESH_TOKEN,
                                             MSG_PROMPT_SCHEMA_URL,
+                                            MSG_PROMPT_SCOPES,
                                             MSG_PROMPT_SEARCH_URL,
+                                            MSG_PROMPT_SERVER,
                                             MSG_PROMPT_STORAGE_URL,
+                                            MSG_PROMPT_TOKEN_ENDPOINT_URL,
                                             MSG_PROMPT_UNIT_URL,
                                             MSG_PROMPT_WORKFLOW_URL,
-                                            MSG_PROMPT_TOKEN_ENDPOINT_URL,
-                                            MSG_PROMPT_DATA_PARTITION,
-                                            MSG_PROMPT_LEGAL_TAG,
-                                            MSG_PROMPT_ACL_VIEWER,
-                                            MSG_PROMPT_ACL_OWNER,
-                                            MSG_PROMPT_AUTHENTICATION_MODE,
-                                            AUTHENTICATION_LIST,
-                                            MSG_PROMPT_AUTHORITY,
-                                            MSG_PROMPT_SCOPES,
-                                            MSG_PROMPT_REFRESH_TOKEN,
-                                            MSG_PROMPT_CLIENT_ID,
-                                            MSG_PROMPT_CLIENT_SECRET
-                                            )
+                                            OUTPUT_LIST)
+from osducli.config import (CONFIG_ACL_OWNER, CONFIG_ACL_VIEWER,
+                            CONFIG_AUTHENTICATION_AUTHORITY,
+                            CONFIG_AUTHENTICATION_MODE,
+                            CONFIG_AUTHENTICATION_SCOPES, CONFIG_CLIENT_ID,
+                            CONFIG_CLIENT_SECRET, CONFIG_DATA_PARTITION_ID,
+                            CONFIG_ENTITLEMENTS_URL, CONFIG_FILE_URL,
+                            CONFIG_LEGAL_TAG, CONFIG_REFRESH_TOKEN,
+                            CONFIG_SCHEMA_URL, CONFIG_SEARCH_URL,
+                            CONFIG_SERVER, CONFIG_STORAGE_URL,
+                            CONFIG_TOKEN_ENDPOINT, CONFIG_UNIT_URL,
+                            CONFIG_WORKFLOW_URL,
+                            get_default_choice_index_from_config,
+                            get_default_from_config)
+from osducli.prompt import prompt, prompt_choice_list, prompt_y_n
+from osducli.state import set_default_config_path
 
 
-def _print_cur_configuration(file_config):
+def _print_cur_configuration(cli_config):
     from osducli.config import CLI_ENV_VAR_PREFIX
     print(MSG_HEADING_CURRENT_CONFIG_INFO)
-    for section in file_config.sections():
+    for section in cli_config.sections():
         print()
         print('[{}]'.format(section))
-        for option in file_config.options(section):
-            print('{} = {}'.format(option, file_config.get(section, option)))
+        for option in cli_config.options(section):
+            print('{} = {}'.format(option, cli_config.get(section, option)))
     env_vars = [ev for ev in os.environ if ev.startswith(CLI_ENV_VAR_PREFIX)]
     if env_vars:
         print(MSG_HEADING_ENV_VARS)
@@ -242,5 +232,5 @@ def set_default(cmd):
     """
     print(MSG_GLOBAL_SETTINGS_LOCATION.format(cmd.cli_ctx.config.config_path))
     config = prompt(MSG_PROMPT_CONFIG)
-    set_default_config_file(config)
+    set_default_config_path(config)
     print('\nDefault configuration updated')

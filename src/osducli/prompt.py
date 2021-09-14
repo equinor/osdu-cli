@@ -6,11 +6,10 @@
 
 """Read and modify configuration settings related to the CLI"""
 
-import sys
 import getpass
+import sys
 
 from knack.log import get_logger
-
 
 logger = get_logger(__name__)
 

@@ -8,10 +8,9 @@
 
 from knack.help_files import helps
 
-
 helps['unit'] = """
     type: group
-    short-summary: Working with the Unit API
+    short-summary: Unit Service
 """
 
 # the pipe in long-summary preserves the newlines.
