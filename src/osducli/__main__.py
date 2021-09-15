@@ -95,7 +95,7 @@ class CustomHelpGroup(click.Group):
 
 
 # Main entry point for OSDU CLI.
-# pylint: disable=W1401
+# noqa: W606,W605 pylint: disable=W1401
 @click.group(
     # cls=CustomHelpGroup,
     commands=get_commands_from_pkg("osducli.commands"),
@@ -123,7 +123,7 @@ def cli(ctx):
 
 def main():
     """Main entry point for OSDU CLI."""
-    cli()
+    cli(None)
 
 
 if __name__ == "__main__":

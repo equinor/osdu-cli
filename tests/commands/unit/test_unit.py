@@ -13,8 +13,9 @@ from knack.testsdk import ScenarioTest
 from testfixtures import LogCapture
 
 from osdu.identity import OsduTokenCredential
+from osducli.click_cli import State
 
-from osducli.commands.unit.custom import unit_list
+from osducli.commands.unit.list import unit_list
 from osducli.config import CONFIG_AUTHENTICATION_MODE, CONFIG_SERVER
 from osducli.cliclient import CliOsduClient
 
@@ -24,14 +25,14 @@ def mock_config_values(section, name, fallback=None):  # pylint: disable=W0613
     # if section != 'core':
     #     raise ValueError(f'Cannot retrieve config section \'{section}\'')
     if name == CONFIG_SERVER:
-        return 'https://dummy.com'
+        return "https://dummy.com"
     if name == CONFIG_AUTHENTICATION_MODE:
-        return 'refresh_token'
-    return f'{section}_{name}'
+        return "refresh_token"
+    return f"{section}_{name}"
 
 
 MOCK_CONFIG = MagicMock()
-MOCK_CONFIG.return_value.get.side_effect = mock_config_values
+MOCK_CONFIG.get.side_effect = mock_config_values
 
 
 class UnitTests(ScenarioTest):
@@ -42,10 +43,10 @@ class UnitTests(ScenarioTest):
     """
 
     def __init__(self, method_name):
-        super().__init__(None, method_name, filter_headers=['Authorization'])
+        super().__init__(None, method_name, filter_headers=["Authorization"])
         self.recording_processors = [self.name_replacer]
-        self.vcr.register_matcher('always', UnitTests._vcrpy_match_always)
-        self.vcr.match_on = ['always']
+        self.vcr.register_matcher("always", UnitTests._vcrpy_match_always)
+        self.vcr.match_on = ["always"]
 
     # If doing a new live test to get / refresh a recording then:
     # - Comment out the below patch and remove the get_headers parameter
@@ -53,34 +54,39 @@ class UnitTests(ScenarioTest):
     # - Delete or obfuscate any other sensitive information.
     # - Adjust test case as necessary e.g. totalCount
     # - Add patch and parameter back
-    @patch.object(OsduTokenCredential, 'get_token', return_value='DUMMY_ACCESS_TOKEN')
-    @patch('osducli.config.CLIConfig', new=MOCK_CONFIG)
+    @patch.object(OsduTokenCredential, "get_token", return_value="DUMMY_ACCESS_TOKEN")
     def test_unit_list(self, get_headers):  # pylint: disable=W0613
         """Test for a successful response"""
 
-        self.cassette.filter_headers = ['Authorization']
+        self.cassette.filter_headers = ["Authorization"]
+        state = State()
+        state.config = MOCK_CONFIG
 
         with LogCapture(level=logging.WARN) as log_capture:
-            result = unit_list()
+            result = unit_list(state)
             assert isinstance(result, dict)
-            assert result['totalCount'] == 3695
-            assert result['count'] == 3
-            assert len(result['units']) == result['count']
+            assert result["totalCount"] == 3695
+            assert result["count"] == 3
+            assert len(result["units"]) == result["count"]
             assert len(log_capture.records) == 0
 
-    @patch.object(CliOsduClient, 'cli_get_returning_json', side_effect=SystemExit(1))
+    @patch.object(CliOsduClient, "cli_get_returning_json", side_effect=SystemExit(1))
     def test_unit_list_exit(self, mock_cli_get_returning_json):  # pylint: disable=W0613
         """Test any exit error is propogated"""
+        state = State()
+        state.config = MOCK_CONFIG
+
         with self.assertRaises(SystemExit) as sysexit:
-            _ = unit_list()
+            _ = unit_list(state)
             self.assertEqual(sysexit.exception.code, 1)
 
     @classmethod
     def _vcrpy_match_always(cls, url1, url2):  # pylint: disable=W0613
-        """ Return true always (only 1 query). """
+        """Return true always (only 1 query)."""
         return True
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import nose2
+
     nose2.main()

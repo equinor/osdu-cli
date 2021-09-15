@@ -65,7 +65,7 @@ def _create_search_query(record_ids):
     return {"kind": "*:*:*:*.*.*", "returnedFields": ["id"], "offset": 0, "query": final_query}
 
 
-def verify(state: State, path: str, batch_size: int) -> dict:
+def verify(state: State, path: str, batch_size: int) -> dict:  # noqa: C901 pylint: disable=R0912
     """Verify if records exist in OSDU.
 
     Args:
