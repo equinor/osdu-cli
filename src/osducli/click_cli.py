@@ -146,8 +146,8 @@ def command_with_output(table_transformer=None):
                         print(json.dumps(result, indent=2))
                     else:
                         result_list = result if isinstance(result, list) else [result]
-                        should_sort_keys = not state.jmes
-                        table_output = _TableOutput(should_sort_keys)
+                        # should_sort_keys = not state.jmes
+                        table_output = _TableOutput(False)  # should_sort_keys)
                         print(table_output.dump(result_list))
 
         return func_wrapper
