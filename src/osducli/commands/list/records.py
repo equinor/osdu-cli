@@ -14,11 +14,11 @@ from osducli.config import CONFIG_SEARCH_URL
 
 @click.command()
 @handle_cli_exceptions
-@command_with_output(None)
+@command_with_output("sort_by(aggregations,&key)[*].{Key:key,Count:count}")
 def _click_command(state: State):
     """List count of populated records"""
 
-    records(state)
+    return records(state)
 
 
 def records(state: State):
@@ -32,8 +32,4 @@ def records(state: State):
     connection = CliOsduClient(state.config)
     json_response = connection.cli_post_returning_json(CONFIG_SEARCH_URL, "query", request_data)
 
-    # services = [
-    #     OrderedDict([("Kind", record["key"]), ("Count", record["count"])])
-    #     for record in json_response["aggregations"]
-    # ]
     return json_response
