@@ -4,74 +4,126 @@
 # license information.
 # -----------------------------------------------------------------------------
 
-"""Entry or launch point for CLI.
+"""Entry or launch point for CLI."""
 
-Handles creating and launching a CLI to handle a user command."""
+import importlib
+import os.path
+import pkgutil
 
-import sys
-from knack.invocation import CommandInvoker
-from knack.util import CommandResultItem
-from osducli.config import CLI_CONFIG_DIR, CLI_ENV_VAR_PREFIX, CLI_NAME
-from osducli.osdu_cli import OsduCli
-from osducli.osdu_command_loader import OsduCommandLoader
-from osducli.osdu_command_help import OsduCommandHelp
+import click
+from click.core import Context
+from click.formatting import HelpFormatter
 
-# from osducli.util import is_help_command
+from osducli.click_cli import State
 
 
-class OsduInvoker(CommandInvoker):  # pylint: disable=too-few-public-methods
-    """Extend Invoker to to handle when a system service is not installed (BRS/EventStore cases)."""
-    def execute(self, args):
-        try:
-            return super(OsduInvoker, self).execute(args)
+def get_commands_from_pkg(pkg) -> dict:
+    """Dynamically and recursively get all click commands within the specified package
 
-        # For exceptions happening while handling http requests, FabricErrorException is thrown with
-        # 'Internal Server Error' message, but here we handle the case where gateway is unable
-        # to find the service.
-        except TypeError:
-            if args[0] == 'events':
-                from knack.log import get_logger
-                logger = get_logger(__name__)
-                logger.error('Service is not installed.')
-                return CommandResultItem(None, exit_code=0)
-            raise
+    Args:
+        pkg ([type]): [description]
+
+    Returns:
+        dict: [description]
+    """
+    keep_groups = [
+        "osducli.commands.list",
+        "osducli.commands.unit",
+        "osducli.commands.search",
+        "osducli.commands.workflow",
+    ]
+    pkg_obj = importlib.import_module(pkg)
+
+    pkg_path = os.path.dirname(pkg_obj.__file__)
+    commands = {}
+    for module in pkgutil.iter_modules([pkg_path]):
+        module_obj = importlib.import_module(f"{pkg}.{module.name}")
+
+        if not module.ispkg:
+            if hasattr(module_obj, "_click_command"):
+                commands[module.name] = module_obj._click_command  # pylint: disable= W0212
+                # print(f"Add command {pkg}.{module.name}")
+
+        else:
+            group_commands = get_commands_from_pkg(f"{pkg}.{module.name}")
+            if len(group_commands) == 1 and f"{pkg}.{module.name}" not in keep_groups:
+                # print(f"Add command {pkg}.{module.name} - {module.name.replace('_', '-')}")
+                click_command = list(group_commands.values())[0]
+                click_command.context_settings["help_option_names"] = ["-h", "--help"]
+                commands[module.name.replace("_", "-")] = click_command
+            elif len(group_commands) >= 1:
+                # print(f"Add group {module.name.replace('_', '-')}\n{group_commands}")
+                commands[module.name.replace("_", "-")] = click.Group(
+                    context_settings={"help_option_names": ["-h", "--help"]},
+                    help=module_obj.__doc__,
+                    commands=group_commands,
+                )
+            # else:
+            #     print(f"Skip group {module.name.replace('_', '-')}")
+    # if len(commands) > 0:
+    #     print(f"return {len(commands)}")
+    #     print(commands)
+    return commands
+
+
+class CustomHelpGroup(click.Group):
+    """Custom help text for the base click command
+
+    Args:
+        click ([type]): [description]
+    """
+
+    def format_help(self, ctx, formatter):
+        self.format_usage(ctx, formatter)
+        self.format_help_text(ctx, formatter)
+        # click.Command.format_options(self, ctx, formatter)
+        self.format_commands(ctx, formatter)
+        self.format_epilog(ctx, formatter)
+        self.format_global_options(ctx, formatter)
+
+    def format_global_options(self, ctx: Context, formatter: HelpFormatter) -> None:
+        """Writes all the options into the formatter if they exist."""
+        opts = []
+        for param in self.get_params(ctx):
+            _rv = param.get_help_record(ctx)
+            if _rv is not None:
+                opts.append(_rv)
+
+        if opts:
+            with formatter.section("Global Options"):
+                formatter.write_dl(opts)
+
+
+# Main entry point for OSDU CLI.
+# noqa: W606,W605 pylint: disable=W1401
+@click.group(
+    # cls=CustomHelpGroup,
+    commands=get_commands_from_pkg("osducli.commands"),
+    context_settings={"help_option_names": ["-h", "--help"]},
+)
+@click.pass_context
+def cli(ctx):
+    """
+    \b
+     ___  ___  ___  _ _
+    | . |/ __]| . \| | |
+    | | |\__ \| | || | |
+    `___'[___/|___/ \__|
+
+    Welcome to the OSDU CLI!
+    Note: This is currently a work in progress. Please share ideas / issues on the git page.
+
+    Use `osducli version` to display the current version.
+
+    Usage:
+    osdu [command]
+    """
+    ctx.obj = State()
 
 
 def main():
-    """Main entry point for OSDU CLI.
-
-    Configures and invokes CLI with arguments passed during the time the python
-    session is launched.
-
-    This is run every time a osducli command is invoked.
-
-    If you have a local error, say the command is not recognized, then the invoke command will
-    raise an exception.
-    If you have success, it will return error code 0.
-    If the HTTP request returns an error, then an exception is not thrown, and error
-    code is not 0."""
-    try:
-
-        args_list = sys.argv[1:]
-
-        osducli = OsduCli(cli_name=CLI_NAME,
-                          config_dir=CLI_CONFIG_DIR,
-                          config_env_var_prefix=CLI_ENV_VAR_PREFIX,
-                          invocation_cls=OsduInvoker,
-                          commands_loader_cls=OsduCommandLoader,
-                          help_cls=OsduCommandHelp)
-
-        # osducli.register_event(OsduCli.events.EVENT_PARSER_GLOBAL_CREATE, lambda:  OutputProducer.on_global_arguments)
-        # osducli.register_event(OsduCli.events.EVENT_INVOKER_POST_PARSE_ARGS, OutputProducer.handle_output_argument)
-
-        # is_help_cmd = is_help_command(args_list)
-
-        exit_code = osducli.invoke(args_list)
-
-        sys.exit(exit_code)
-
-    except KeyboardInterrupt:
-        sys.exit(1)
+    """Main entry point for OSDU CLI."""
+    cli(None)
 
 
 if __name__ == "__main__":

@@ -1,11 +1,14 @@
+black==21.8b0
 docutils==0.17.1
 flake8==3.9.2
 isort==5.9.3
+knack==0.8.2
 mock==4.0.2
 nose2==0.10.0
 pep8==1.7.1
-autopep8==1.5.7
+Pygments==2.9.0
 pylint==2.9.6
+setuptools==47.1.0
 tox==3.24.1
 testfixtures==6.18.0
 vcrpy==4.1.1

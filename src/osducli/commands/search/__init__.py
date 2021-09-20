@@ -4,13 +4,4 @@
 # license information.
 # -----------------------------------------------------------------------------
 
-"""TODO: Add module docstring."""
-
-from knack import CLI
-
-
-class OsduCli(CLI):
-    """Extend CLI to override get_cli_version."""
-    def get_cli_version(self):
-        from osducli import __VERSION__
-        return __VERSION__
+"""Search service commands"""

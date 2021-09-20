@@ -6,15 +6,14 @@
 
 """Read and modify configuration settings related to the CLI"""
 
-import sys
 import getpass
+import sys
 
-from knack.log import get_logger
-
+from osducli.log import get_logger
 
 logger = get_logger(__name__)
 
-_INVALID_PASSWORD_MSG = 'Passwords do not match.'
+_INVALID_PASSWORD_MSG = "Passwords do not match."
 
 
 class NoTTYException(Exception):
@@ -45,11 +44,13 @@ def verify_is_a_tty():
         NoTTYException: [description]
     """
     if not sys.stdin.isatty():
-        logger.debug('No tty available.')
+        logger.debug("No tty available.")
         raise NoTTYException()
 
 
-def prompt(msg: str, default: str = None, default_value_display_length: int = None, help_string: str = None) -> str:
+def prompt(
+    msg: str, default: str = None, default_value_display_length: int = None, help_string: str = None
+) -> str:
     """Prompt the user for input with support for default value and help
 
     If the msg string contains []: and default is specified then the msg string is
@@ -71,16 +72,18 @@ def prompt(msg: str, default: str = None, default_value_display_length: int = No
     if default is not None:
         displayed_default = default
         if default_value_display_length and len(default) > default_value_display_length:
-            displayed_default = displayed_default[0:default_value_display_length-2] + '..'
+            displayed_default = (
+                displayed_default[0 : default_value_display_length - 2] + ".."  # noqa: E203
+            )
 
-        msg = msg.replace('[]:', f'[{displayed_default}]:')
+        msg = msg.replace("[]:", f"[{displayed_default}]:")
 
     while True:
         val = _input(msg)
-        if val == '?' and help_string is not None:
+        if val == "?" and help_string is not None:
             print(help_string)
             continue
-        if val == '' and default is not None:
+        if val == "" and default is not None:
             return default
 
         return val
@@ -100,16 +103,16 @@ def prompt_int(msg: str, help_string: str = None) -> int:
 
     while True:
         value = _input(msg)
-        if value == '?' and help_string is not None:
+        if value == "?" and help_string is not None:
             print(help_string)
             continue
         try:
             return int(value)
         except ValueError:
-            logger.warning('%s is not a valid number', value)
+            logger.warning("%s is not a valid number", value)
 
 
-def prompt_pass(msg: str = 'Password: ', confirm: bool = False, help_string: str = None):
+def prompt_pass(msg: str = "Password: ", confirm: bool = False, help_string: str = None):
     """[summary]
 
     Args:
@@ -123,11 +126,11 @@ def prompt_pass(msg: str = 'Password: ', confirm: bool = False, help_string: str
     verify_is_a_tty()
     while True:
         password = getpass.getpass(msg)
-        if password == '?' and help_string is not None:
+        if password == "?" and help_string is not None:
             print(help_string)
             continue
         if confirm:
-            password2 = getpass.getpass('Confirm ' + msg)
+            password2 = getpass.getpass("Confirm " + msg)
             if password != password2:
                 logger.warning(_INVALID_PASSWORD_MSG)
                 continue
@@ -145,7 +148,7 @@ def prompt_y_n(msg: str, default: bool = None, help_string: str = None):
     Returns:
         [type]: [description]
     """
-    return _prompt_bool(msg, 'y', 'n', default=default, help_string=help_string)
+    return _prompt_bool(msg, "y", "n", default=default, help_string=help_string)
 
 
 def prompt_t_f(msg: str, default: str = None, help_string: str = None):
@@ -159,10 +162,12 @@ def prompt_t_f(msg: str, default: str = None, help_string: str = None):
     Returns:
         [type]: [description]
     """
-    return _prompt_bool(msg, 't', 'f', default=default, help_string=help_string)
+    return _prompt_bool(msg, "t", "f", default=default, help_string=help_string)
 
 
-def _prompt_bool(msg: str, true_str: str, false_str: str, default: str = None, help_string: str = None):
+def _prompt_bool(
+    msg: str, true_str: str, false_str: str, default: str = None, help_string: str = None
+):
     """[summary]
 
     Args:
@@ -184,8 +189,8 @@ def _prompt_bool(msg: str, true_str: str, false_str: str, default: str = None, h
     _yes = true_str.upper() if default == true_str else true_str
     _no = false_str.upper() if default == false_str else false_str
     while True:
-        ans = _input('{} ({}/{}): '.format(msg, _yes, _no))
-        if ans == '?' and help_string is not None:
+        ans = _input("{} ({}/{}): ".format(msg, _yes, _no))
+        if ans == "?" and help_string is not None:
             print(help_string)
             continue
         if ans.lower() == _no.lower():
@@ -208,19 +213,26 @@ def prompt_choice_list(msg, a_list, default=1, help_string=None):
     :returns: The list index of the item chosen.
     """
     verify_is_a_tty()
-    options = '\n'.join([' [{}] {}{}'
-                         .format(i + 1,
-                                 x['name'] if isinstance(x, dict) and 'name' in x else x,
-                                 ' - ' + x['desc'] if isinstance(x, dict) and 'desc' in x else '')
-                         for i, x in enumerate(a_list)])
+    options = "\n".join(
+        [
+            " [{}] {}{}".format(
+                i + 1,
+                x["name"] if isinstance(x, dict) and "name" in x else x,
+                " - " + x["desc"] if isinstance(x, dict) and "desc" in x else "",
+            )
+            for i, x in enumerate(a_list)
+        ]
+    )
     allowed_vals = list(range(1, len(a_list) + 1))
     while True:
-        val = _input('{}\n{}\nPlease enter a choice [Default choice({})]: '.format(msg, options, default))
-        if val == '?' and help_string is not None:
+        val = _input(
+            "{}\n{}\nPlease enter a choice [Default choice({})]: ".format(msg, options, default)
+        )
+        if val == "?" and help_string is not None:
             print(help_string)
             continue
         if not val:
-            val = '{}'.format(default)
+            val = "{}".format(default)
         try:
             ans = int(val)
             if ans in allowed_vals:
@@ -228,4 +240,4 @@ def prompt_choice_list(msg, a_list, default=1, help_string=None):
                 return ans - 1
             raise ValueError
         except ValueError:
-            logger.warning('Valid values are %s', allowed_vals)
+            logger.warning("Valid values are %s", allowed_vals)

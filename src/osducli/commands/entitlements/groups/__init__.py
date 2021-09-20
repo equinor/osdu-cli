@@ -4,9 +4,4 @@
 # license information.
 # -----------------------------------------------------------------------------
 
-"""Custom cluster upgrade specific commands"""
-
-
-def version():
-    """Create a monitoring policy description for an upgrade"""
-    print("NOT IMPLEMENTED - DUMMY CODE / NOT VALID CALL")
+"""Manage groups"""

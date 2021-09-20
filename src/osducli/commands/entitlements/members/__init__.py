@@ -4,4 +4,4 @@
 # license information.
 # -----------------------------------------------------------------------------
 
-"""Constants for configure commands"""
+"""Manage members"""

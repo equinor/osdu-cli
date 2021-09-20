@@ -4,18 +4,18 @@
 # license information.
 # -----------------------------------------------------------------------------
 
-"""Help documentation for unit commands."""
+"""Version command"""
 
-from knack.help_files import helps
+import click
+
+from osducli.click_cli import global_params
+from osducli.cliclient import handle_cli_exceptions
 
 
-helps['unit'] = """
-    type: group
-    short-summary: Working with the Unit API
-"""
-
-# the pipe in long-summary preserves the newlines.
-helps['unit list'] = """
-    type: command
-    short-summary: List units.
-"""
+# click entry point
+@click.command()
+@handle_cli_exceptions
+@global_params
+def _click_command(_):
+    """Coming soon"""
+    print("TODO - coming soon")
