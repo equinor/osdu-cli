@@ -28,6 +28,11 @@ For more information, specify the `-h` flag:
 Change Log
 ==========
 
+0.0.10
+------
+
+- refeactor code to use click instead of knack
+
 0.0.9
 -----
 
