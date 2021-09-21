@@ -7,7 +7,7 @@
 """Dataload status command"""
 
 import sys
-from os import times
+import time
 
 import click
 
@@ -111,7 +111,7 @@ def status(state: State, runid: str = None, runid_log: str = None, wait: bool = 
             if ingestion_complete:
                 break
 
-            times.sleep(60)  # 60 seconds sleep.
+            time.sleep(60)  # 60 seconds sleep.
             results = _status_check(state.config, runids)  # recheck the status.
 
     return results

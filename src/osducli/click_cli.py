@@ -42,8 +42,10 @@ def global_params(func):
     def debug_callback(ctx, _, value):
         state = ctx.ensure_object(State)
         state.debug = value
+        logging.basicConfig()
+        root_logger = logging.getLogger()
+        root_logger.setLevel(logging.INFO)
         if value:
-            logging.basicConfig()
             root_logger = logging.getLogger()
             root_logger.setLevel(logging.DEBUG)
             logger = get_logger(__name__)
@@ -157,7 +159,7 @@ def command_with_output(table_transformer=None):
 
 class _TableOutput:  # pylint: disable=too-few-public-methods
 
-    SKIP_KEYS = ["id", "type", "etag"]
+    SKIP_KEYS = []
 
     def __init__(self, should_sort_keys=False):
         self.should_sort_keys = should_sort_keys

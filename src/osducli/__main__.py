@@ -29,6 +29,7 @@ def get_commands_from_pkg(pkg) -> dict:
     keep_groups = [
         "osducli.commands.list",
         "osducli.commands.unit",
+        "osducli.commands.schema",
         "osducli.commands.search",
         "osducli.commands.workflow",
     ]

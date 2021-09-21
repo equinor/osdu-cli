@@ -31,6 +31,7 @@ from osducli.config import (
     CLIConfig,
 )
 from osducli.log import get_logger
+from osducli.util.exceptions import CliError
 
 MSG_JSON_DECODE_ERROR = (
     "Unable to decode the response. Try running again with the --debug command line argument for"
@@ -54,6 +55,8 @@ def handle_cli_exceptions(function):
         except HTTPError as ex:
             logger.error(MSG_HTTP_ERROR)
             logger.error("Error (%s) - %s", ex.response.status_code, ex.response.reason)
+        except CliError as ex:
+            logger.error("Error %s", ex.message)
         except ValueError as ex:
             logger.error(MSG_JSON_DECODE_ERROR)
             logger.debug(ex)
@@ -169,7 +172,11 @@ class CliOsduClient(OsduClient):
         sys.exit(1)
 
     def cli_post_returning_json(
-        self, config_url_key: str, url_extra_path: str, data: Union[str, dict]
+        self,
+        config_url_key: str,
+        url_extra_path: str,
+        data: Union[str, dict],
+        ok_status_codes: list = None,
     ):
         """[summary]
 
@@ -177,13 +184,14 @@ class CliOsduClient(OsduClient):
             config_url_key (str): key in configuration for the base path
             url_extra_path (str): extra path to add to the base path
             data (Union[str, dict]): json data as string or dict to send as the body
+            ok_status_codes (list, optional): Status codes indicating successful call. Defaults to [200].
 
         Returns:
             [type]: [description]
         """
         try:
             url = self._url_from_config(config_url_key, url_extra_path)
-            return self.post_returning_json(url, data)
+            return self.post_returning_json(url, data, ok_status_codes)
         except HTTPError as ex:
             logger.error(MSG_HTTP_ERROR)
             logger.error("Error (%s) - %s", ex.response.status_code, ex.response.reason)

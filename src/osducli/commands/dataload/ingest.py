@@ -23,6 +23,7 @@ from osducli.config import (
     CLIConfig,
 )
 from osducli.log import get_logger
+from osducli.util.file import get_files_from_path
 
 logger = get_logger(__name__)
 
@@ -32,7 +33,7 @@ logger = get_logger(__name__)
 @click.option(
     "-p",
     "--path",
-    help="Path to a file containing run ids to get status of (see dataload ingest -h).",
+    help="Path to a file or files to ingest.",
     required=True,
 )
 @click.option("-f", "--files", help="Associated files to upload for Work-Products.")
@@ -59,17 +60,10 @@ def ingest(state: State, path: str, files: str, batch_size: int = 1, runid_log: 
     Returns:
         dict: Response from service
     """
-    allfiles = []
-    if os.path.isfile(path):
-        allfiles = [path]
+    files = get_files_from_path(path)
+    logger.debug("Files list: %s", files)
 
-    # Recursive traversal of files and subdirectories of the root directory and files processing
-    for root, _, _files in os.walk(path):
-        logger.info("Files list: %s", _files)
-        for file in _files:
-            allfiles.append(os.path.join(root, file))
-
-    runids = _ingest_files(state.config, allfiles, files, runid_log, batch_size)
+    runids = _ingest_files(state.config, files, files, runid_log, batch_size)
     print(runids)
     return runids
 
@@ -85,7 +79,6 @@ def _ingest_files(
             # clear existing logs
             runid_log_handle = open(runid_log, "w")  # pylint: disable=R1732
 
-        cur_batch = 0
         data_objects = []
         for filepath in allfiles:
             if filepath.endswith(".json"):
@@ -109,40 +102,42 @@ def _ingest_files(
                 )
 
             data_objects += object_to_ingest
-            cur_batch += len(object_to_ingest)
 
-            if cur_batch >= batch_size:
-                logger.info("Sending Request with batch size %s", cur_batch)
-                _ingest_send_batch(config, runids, runid_log_handle, data_objects, data_type)
-                cur_batch = 0
-                data_objects = []
-            else:
-                logger.info(
-                    "Current batch size after process %s is %s. Reading more files..",
-                    filepath,
-                    cur_batch,
-                )
-
-        if cur_batch > 0:
-            logger.info("Ingesting remaining records %s", cur_batch)
-            _ingest_send_batch(config, runids, runid_log_handle, data_objects, data_type)
+            _process_batch(config, batch_size, data_type, data_objects, runids, runid_log_handle)
     finally:
         if runid_log is not None:
             runid_log_handle.close()
     return runids
 
 
-def _ingest_send_batch(config: CLIConfig, runids, runid_log_handle, data_objects, data_type):
-    request_data = _populate_request_body(config, data_objects, data_type)
-    connection = CliOsduClient(config)
-    response_json = connection.cli_post_returning_json(
-        CONFIG_WORKFLOW_URL, "workflow/Osdu_ingest/workflowRun", request_data
-    )
-    runid = response_json.get("runId")
-    logger.info("Returned runID: %s", runid)
-    if runid_log_handle:
-        runid_log_handle.write(f"{runid}\n")
-    runids.append(runid)
+def _process_batch(
+    config,
+    batch_size,
+    data_type,
+    data_objects,
+    runids,
+    runid_log_handle,
+    # process_all_ids=False,
+):
+    # while len(data_objects) >= batch_size or (process_all_ids and len(data_objects) > 0):
+    while len(data_objects) > 0:
+        total_size = len(data_objects)
+        batch_size = min(batch_size, total_size)
+        current_batch = data_objects[:batch_size]
+        del data_objects[:batch_size]
+        print(
+            f"Processing batch - total {total_size}, batch size {len(current_batch)}, remaining {len(data_objects)}"
+        )
+        request_data = _populate_request_body(config, data_objects, data_type)
+        connection = CliOsduClient(config)
+        response_json = connection.cli_post_returning_json(
+            CONFIG_WORKFLOW_URL, "workflow/Osdu_ingest/workflowRun", request_data
+        )
+        runid = response_json.get("runId")
+        logger.info("Returned runID: %s", runid)
+        if runid_log_handle:
+            runid_log_handle.write(f"{runid}\n")
+        runids.append(runid)
 
 
 def _populate_request_body(config: CLIConfig, data, data_type):
@@ -155,7 +150,7 @@ def _populate_request_body(config: CLIConfig, data, data_type):
             "manifest": {"kind": "osdu:wks:Manifest:1.0.0", data_type: data},
         }
     }
-    logger.info("Request to be sent %s", request)
+    logger.debug("Request to be sent %s", request)
     return request
 
 

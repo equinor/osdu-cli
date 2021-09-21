@@ -28,6 +28,12 @@ For more information, specify the `-h` flag:
 Change Log
 ==========
 
+0.0.11
+------
+
+- schema commands
+- dataload batching imporvements
+
 0.0.10
 ------
 

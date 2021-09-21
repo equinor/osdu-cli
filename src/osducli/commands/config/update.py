@@ -14,8 +14,7 @@ from osducli.click_cli import State, global_params
 from osducli.cliclient import handle_cli_exceptions
 from osducli.commands.config.consts import (AUTHENTICATION_LIST, MSG_CLOSING,
                                             MSG_GLOBAL_SETTINGS_LOCATION,
-                                            MSG_INTRO,
-                                            MSG_PROMPT_ACL_OWNER,
+                                            MSG_INTRO, MSG_PROMPT_ACL_OWNER,
                                             MSG_PROMPT_ACL_VIEWER,
                                             MSG_PROMPT_AUTHENTICATION_MODE,
                                             MSG_PROMPT_AUTHORITY,

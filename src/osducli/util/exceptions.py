@@ -4,9 +4,14 @@
 # license information.
 # -----------------------------------------------------------------------------
 
-""" OSDU command line environment"""
 
-# from pkgutil import extend_path
-# __path__ = extend_path(__path__, __name__)
+class CliError(Exception):
+    """General Cli Exception.
 
-__VERSION__ = "0.0.11"
+    Attributes:
+        message -- explanation of the error
+    """
+
+    def __init__(self, message: str):
+        self.message = message
+        super().__init__(self.message)

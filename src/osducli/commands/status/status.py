@@ -11,14 +11,9 @@ from requests.models import HTTPError
 
 from osducli.click_cli import global_params
 from osducli.cliclient import CliOsduClient, handle_cli_exceptions
-from osducli.config import (
-    CONFIG_FILE_URL,
-    CONFIG_SCHEMA_URL,
-    CONFIG_SEARCH_URL,
-    CONFIG_STORAGE_URL,
-    CONFIG_UNIT_URL,
-    CONFIG_WORKFLOW_URL,
-)
+from osducli.config import (CONFIG_FILE_URL, CONFIG_SCHEMA_URL,
+                            CONFIG_SEARCH_URL, CONFIG_STORAGE_URL,
+                            CONFIG_UNIT_URL, CONFIG_WORKFLOW_URL)
 
 
 @click.command()

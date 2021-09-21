@@ -56,6 +56,9 @@ class HelpTextTests(unittest.TestCase):
                 # Find the first ':' character and check that there are characters following it
                 first_index = line.find("  ")
                 # first_index = line.find(": ")
+                self.assertNotEqual(
+                    -1, first_index, msg="Validating help output failed on line: " + line
+                )
                 self.assertGreater(
                     len(line), first_index + 1, msg="Validating help output failed on line: " + line
                 )
@@ -97,8 +100,9 @@ class HelpTextTests(unittest.TestCase):
             ):
 
                 # make sure there is descriptive text in this line
+                help_text = line.replace(first_word_of_line, "", 1).strip()
                 self.assertGreater(
-                    len(line.replace(first_word_of_line, "", 1).strip()),
+                    len(help_text),
                     0,
                     msg='Missing help text in "Commands" section on line: ' + line,
                 )
@@ -422,10 +426,14 @@ class HelpTextTests(unittest.TestCase):
             commands=("records",),
         )
 
-        # self.validate_output(
-        #     "osducli schema",
-        #     commands=("info",),
-        # )
+        self.validate_output(
+            "osducli schema",
+            commands=(
+                "add",
+                "get",
+                "list",
+            ),
+        )
 
         self.validate_output(
             "osducli search",
