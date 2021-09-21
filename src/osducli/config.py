@@ -9,6 +9,8 @@
 import configparser
 import os
 
+from osducli.util.file import ensure_directory_exists
+
 _UNSET = object()
 
 
@@ -157,7 +159,7 @@ class CLIConfig:
         return CLIConfig._BOOLEAN_STATES[val.lower()]
 
     def set(self, config):
-        # ensure_dir(self.config_dir)
+        ensure_directory_exists(self.config_dir)
         with open(self.config_path, "w") as configfile:
             # if self.config_comment:
             #     configfile.write(self.config_comment + '\n')

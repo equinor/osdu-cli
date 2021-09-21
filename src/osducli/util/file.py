@@ -4,6 +4,7 @@
 # license information.
 # -----------------------------------------------------------------------------
 
+import errno
 import os
 
 
@@ -25,3 +26,13 @@ def get_files_from_path(path: str) -> list:
         for file in files:
             allfiles.append(os.path.join(root, file))
     return allfiles
+
+
+def ensure_directory_exists(directory: str):
+    """Create a directory if it doesn't exist"""
+    if not os.path.isdir(directory):
+        try:
+            os.makedirs(directory)
+        except OSError as _e:
+            if _e.errno != errno.EEXIST:
+                raise _e
