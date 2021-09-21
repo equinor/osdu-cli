@@ -28,6 +28,11 @@ For more information, specify the `-h` flag:
 Change Log
 ==========
 
+0.0.12
+------
+
+- Fix config permissions
+
 0.0.11
 ------
 

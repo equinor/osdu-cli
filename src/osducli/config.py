@@ -8,6 +8,7 @@
 
 import configparser
 import os
+import stat
 
 from osducli.util.file import ensure_directory_exists
 
@@ -164,7 +165,7 @@ class CLIConfig:
             # if self.config_comment:
             #     configfile.write(self.config_comment + '\n')
             config.write(configfile)
-        os.chmod(self.config_path, os.stat.S_IRUSR | os.stat.S_IWUSR)
+        os.chmod(self.config_path, stat.S_IRUSR | stat.S_IWUSR)
         self.config_parser.read(self.config_path)
 
     def set_value(self, section, option, value):
