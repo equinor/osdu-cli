@@ -34,6 +34,7 @@ logger = get_logger(__name__)
     "-p",
     "--path",
     help="Path to a file or files to ingest.",
+    type=click.Path(exists=True, file_okay=True, dir_okay=True, readable=True, resolve_path=True),
     required=True,
 )
 @click.option("-f", "--files", help="Associated files to upload for Work-Products.")
@@ -128,7 +129,7 @@ def _process_batch(
         print(
             f"Processing batch - total {total_size}, batch size {len(current_batch)}, remaining {len(data_objects)}"
         )
-        request_data = _populate_request_body(config, data_objects, data_type)
+        request_data = _populate_request_body(config, current_batch, data_type)
         connection = CliOsduClient(config)
         response_json = connection.cli_post_returning_json(
             CONFIG_WORKFLOW_URL, "workflow/Osdu_ingest/workflowRun", request_data
@@ -144,7 +145,7 @@ def _populate_request_body(config: CLIConfig, data, data_type):
     request = {
         "executionContext": {
             "Payload": {
-                "AppKey": "test-app",
+                "AppKey": "osdu-cli",
                 "data-partition-id": config.get("core", CONFIG_DATA_PARTITION_ID),
             },
             "manifest": {"kind": "osdu:wks:Manifest:1.0.0", data_type: data},

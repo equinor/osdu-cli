@@ -3,9 +3,11 @@
 
 SETLOCAL
 
-IF %1 == local CALL :lint_func & CALL :test_func
+IF %1 == local CALL :lint_func & CALL :format_func & CALL :test_func
 
 IF %1 == lint CALL :lint_func
+
+IF %1 == format CALL :format_func
 
 IF %1 == test CALL :test_func
 
@@ -26,6 +28,18 @@ echo flake8 tests
 flake8 --statistics --append-config=.flake8 tests
 :: pylint ./osducli --msg-template="{path}({line}): [{msg_id}{obj}] {msg}" --load-plugins=pylintcheckersfolder
 :: pylint ./checkers --msg-template="{path}({line}): [{msg_id}{obj}] {msg}" --load-plugins=pylintcheckersfolder
+EXIT /B 0
+
+:: define function to clean code
+:format_func
+echo isort src
+isort src --profile black
+echo isort tests
+isort tests --profile black
+echo black src
+black src --line-length 100
+echo black tests
+black tests --line-length 100
 EXIT /B 0
 
 :: define function to launch tests

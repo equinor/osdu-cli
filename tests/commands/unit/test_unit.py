@@ -8,16 +8,16 @@
 """Test cases for unit commands"""
 
 import logging
-from mock import MagicMock, patch
+
 from knack.testsdk import ScenarioTest
+from mock import MagicMock, patch
+from osdu.identity import OsduTokenCredential
 from testfixtures import LogCapture
 
-from osdu.identity import OsduTokenCredential
 from osducli.click_cli import State
-
+from osducli.cliclient import CliOsduClient
 from osducli.commands.unit.list import unit_list
 from osducli.config import CONFIG_AUTHENTICATION_MODE, CONFIG_SERVER
-from osducli.cliclient import CliOsduClient
 
 
 def mock_config_values(section, name, fallback=None):  # pylint: disable=W0613

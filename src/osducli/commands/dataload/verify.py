@@ -25,6 +25,7 @@ logger = get_logger(__name__)
     "-p",
     "--path",
     help="Path to a file or files to check.",
+    type=click.Path(exists=True, file_okay=True, dir_okay=True, readable=True, resolve_path=True),
     required=True,
 )
 @click.option("-b", "--batch", help="Batch size.", type=int, default=20)

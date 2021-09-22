@@ -8,16 +8,14 @@
 
 import logging
 
-from mock import MagicMock, PropertyMock, patch
 from knack.testsdk import ScenarioTest
-from testfixtures import LogCapture
-
+from mock import MagicMock, PropertyMock, patch
 from osdu.identity import OsduTokenCredential
 from requests.models import HTTPError
+from testfixtures import LogCapture
 
-from osducli.cliclient import CliOsduClient
-from osducli.cliclient import MSG_HTTP_ERROR
-from osducli.config import CONFIG_SERVER, CONFIG_AUTHENTICATION_MODE
+from osducli.cliclient import MSG_HTTP_ERROR, CliOsduClient
+from osducli.config import CONFIG_AUTHENTICATION_MODE, CONFIG_SERVER
 
 
 def mock_config_values(section, name, fallback=None):  # pylint: disable=W0613

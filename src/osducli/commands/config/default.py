@@ -10,8 +10,8 @@ import click
 
 from osducli.click_cli import State, global_params
 from osducli.cliclient import handle_cli_exceptions
-from osducli.prompt import prompt
 from osducli.state import get_default_config_path, set_default_config_path
+from osducli.util.prompt import prompt
 
 
 # click entry point

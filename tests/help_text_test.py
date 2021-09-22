@@ -9,7 +9,7 @@ This only tests for commands/subgroups which are specified in this file.
 This does not test the correctness of help text content."""
 
 import unittest
-from subprocess import Popen, PIPE
+from subprocess import PIPE, Popen
 
 
 class HelpTextTests(unittest.TestCase):

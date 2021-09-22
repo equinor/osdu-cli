@@ -12,8 +12,10 @@ import collections
 import functools
 import json
 import logging
+from os import path
 
 import click
+from osducli.config import CLI_ENV_VAR_PREFIX, CLIConfig
 
 from osducli.log import get_logger
 from osducli.state import get_default_config
@@ -59,6 +61,11 @@ def global_params(func):
     def config_callback(ctx, _, value):
         state = ctx.ensure_object(State)
         state.config_path = value
+        if value:
+            config_path, config_file = path.split(value)
+            state.config = CLIConfig(config_path, CLI_ENV_VAR_PREFIX, config_file)
+        else:
+            state.config = get_default_config(True)
         return value
 
     pass_state = click.make_pass_decorator(State)
@@ -81,10 +88,8 @@ def global_params(func):
     @functools.wraps(func)
     @pass_state
     def wrapper(*args, **kwargs):
-        state = args[0]
         kwargs.pop("debug")
         kwargs.pop("config")
-        state.config = get_default_config(True)
         return func(*args, **kwargs)
 
     return wrapper
@@ -124,7 +129,6 @@ def command_with_output(table_transformer=None):
             state = args[0]
             kwargs.pop("output")
             kwargs.pop("query")
-            state.config = get_default_config(True)
             result = func(*args, **kwargs)
             if result is not None:
                 if type(result) in [dict, list]:

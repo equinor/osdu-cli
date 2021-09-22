@@ -34,6 +34,7 @@ logger = get_logger(__name__)
     "-rl",
     "--runid-log",
     help="Path to a file containing run ids to get status of (see dataload ingest -h).",
+    type=click.Path(exists=True, file_okay=True, readable=True, resolve_path=True),
 )
 @click.option("-w", "--wait", help="Whether to wait for runs to complete.", is_flag=True)
 @handle_cli_exceptions

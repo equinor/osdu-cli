@@ -13,8 +13,10 @@ import click
 
 from osducli.click_cli import global_params
 from osducli.cliclient import handle_cli_exceptions
-from osducli.commands.config.consts import (MSG_HEADING_CURRENT_CONFIG_INFO,
-                                            MSG_HEADING_ENV_VARS)
+from osducli.commands.config.consts import (
+    MSG_HEADING_CURRENT_CONFIG_INFO,
+    MSG_HEADING_ENV_VARS,
+)
 from osducli.config import CLI_ENV_VAR_PREFIX, CLIConfig
 
 # from osducli.util import is_help_command
