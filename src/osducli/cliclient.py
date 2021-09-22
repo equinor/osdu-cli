@@ -205,6 +205,40 @@ class CliOsduClient(OsduClient):
 
         sys.exit(1)
 
+    def cli_delete(
+        self,
+        config_url_key: str,
+        url_extra_path: str,
+        ok_status_codes: list = None,
+    ):
+        """[summary]
+
+        Args:
+            config_url_key (str): key in configuration for the base path
+            url_extra_path (str): extra path to add to the base path
+            data (Union[str, dict]): json data as string or dict to send as the body
+            ok_status_codes (list, optional): Status codes indicating successful call. Defaults to [200].
+
+        Returns:
+            [type]: [description]
+        """
+        try:
+            url = self._url_from_config(config_url_key, url_extra_path)
+            self.delete(url, ok_status_codes)
+            return
+        except HTTPError as ex:
+            logger.error(MSG_HTTP_ERROR)
+            logger.error("Error (%s) - %s", ex.response.status_code, ex.response.reason)
+        except ValueError as ex:
+            logger.error(MSG_JSON_DECODE_ERROR)
+            logger.debug(ex)
+        except (NoOptionError, NoSectionError) as ex:
+            logger.warning(
+                "Configuration missing from config ('%s'). Run 'osducli config update'", ex.args[0]
+            )
+
+        sys.exit(1)
+
         # # loop for implementing retries send process
         # retries = config.getint("CONNECTION", "retries")
         # for retry in range(retries):
