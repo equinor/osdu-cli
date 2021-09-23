@@ -8,7 +8,7 @@
 
 import click
 
-from osducli.click_cli import State, command_with_output, global_params
+from osducli.click_cli import State, global_params
 from osducli.cliclient import CliOsduClient, handle_cli_exceptions
 from osducli.config import CONFIG_WORKFLOW_URL
 
