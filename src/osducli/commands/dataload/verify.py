@@ -28,7 +28,7 @@ logger = get_logger(__name__)
     type=click.Path(exists=True, file_okay=True, dir_okay=True, readable=True, resolve_path=True),
     required=True,
 )
-@click.option("-b", "--batch", help="Batch size.", type=int, default=20)
+@click.option("-b", "--batch", help="Batch size.", type=int, default=20, show_default=True)
 @click.option("--batch-across-files", is_flag=True, help="Create batches across files for speed.")
 @handle_cli_exceptions
 @command_with_output(None)
