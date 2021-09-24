@@ -375,6 +375,7 @@ class HelpTextTests(unittest.TestCase):
                 "config",
                 "dataload",
                 "entitlements",
+                "legal",
                 "list",
                 "schema",
                 "search",
@@ -419,6 +420,11 @@ class HelpTextTests(unittest.TestCase):
         self.validate_output(
             "osducli entitlements members",
             commands=("add", "list"),
+        )
+
+        self.validate_output(
+            "osducli legal",
+            commands=("listtags",),
         )
 
         self.validate_output(
