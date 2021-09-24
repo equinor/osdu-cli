@@ -23,6 +23,7 @@ CLI_ENV_VAR_PREFIX = CLI_NAME
 CONFIG_SERVER = "server"
 CONFIG_ENTITLEMENTS_URL = "entitlements_url"
 CONFIG_FILE_URL = "file_url"
+CONFIG_LEGAL_URL = "legal_url"
 CONFIG_SCHEMA_URL = "schema_url"
 CONFIG_SEARCH_URL = "search_url"
 CONFIG_STORAGE_URL = "storage_url"

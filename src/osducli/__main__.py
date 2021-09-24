@@ -27,6 +27,7 @@ def get_commands_from_pkg(pkg) -> dict:
         dict: [description]
     """
     keep_groups = [
+        "osducli.commands.legal",
         "osducli.commands.list",
         "osducli.commands.unit",
         "osducli.commands.schema",

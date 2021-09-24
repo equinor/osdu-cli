@@ -28,6 +28,7 @@ from osducli.commands.config.consts import (
     MSG_PROMPT_FILE_URL,
     MSG_PROMPT_GLOBAL_OUTPUT,
     MSG_PROMPT_LEGAL_TAG,
+    MSG_PROMPT_LEGAL_URL,
     MSG_PROMPT_MANAGE_GLOBAL,
     MSG_PROMPT_REFRESH_TOKEN,
     MSG_PROMPT_SCHEMA_URL,
@@ -53,6 +54,7 @@ from osducli.config import (
     CONFIG_ENTITLEMENTS_URL,
     CONFIG_FILE_URL,
     CONFIG_LEGAL_TAG,
+    CONFIG_LEGAL_URL,
     CONFIG_REFRESH_TOKEN,
     CONFIG_SCHEMA_URL,
     CONFIG_SEARCH_URL,
@@ -189,7 +191,7 @@ def _configure_authentication(config):
             config.set_value("core", CONFIG_CLIENT_ID, client_id)
 
 
-def _configure_connection(config):  # noqa C901
+def _configure_connection(config):  # noqa C901 pylint: disable=R0912
     output_index = prompt_choice_list(
         MSG_PROMPT_GLOBAL_OUTPUT,
         OUTPUT_LIST,
@@ -210,6 +212,9 @@ def _configure_connection(config):  # noqa C901
     )
     schema_url = _prompt_default_from_config(
         MSG_PROMPT_SCHEMA_URL, config, CONFIG_SCHEMA_URL, fallback="/api/schema-service/v1/"
+    )
+    legal_url = _prompt_default_from_config(
+        MSG_PROMPT_LEGAL_URL, config, CONFIG_LEGAL_URL, fallback="/api/legal/v1/"
     )
     search_url = _prompt_default_from_config(
         MSG_PROMPT_SEARCH_URL, config, CONFIG_SEARCH_URL, fallback="/api/search/v2/"
@@ -255,6 +260,8 @@ def _configure_connection(config):  # noqa C901
         config.set_value("core", CONFIG_ENTITLEMENTS_URL, entitlements_url)
     if file_url != "":
         config.set_value("core", CONFIG_FILE_URL, file_url)
+    if legal_url != "":
+        config.set_value("core", CONFIG_LEGAL_URL, legal_url)
     if schema_url != "":
         config.set_value("core", CONFIG_SCHEMA_URL, schema_url)
     if search_url != "":
