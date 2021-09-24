@@ -203,7 +203,7 @@ def _upload_file(config: CLIConfig, filepath):
         headers = {"Content-Type": "application/octet-stream", "x-ms-blob-type": "BlockBlob"}
         with open(filepath, "rb") as file_handle:
             response = requests.put(signed_url_for_upload, data=file_handle, headers=headers)
-            if not response.status_code in [200, 201]:
+            if response.status_code not in [200, 201]:
                 raise CliError(f"({response.status_code}) {response.text[:250]}")
 
         # generated_file_id = upload_metadata_response_json.get("id")
