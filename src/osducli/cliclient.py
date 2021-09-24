@@ -194,6 +194,7 @@ class CliOsduClient(OsduClient):
             return self.post_returning_json(url, data, ok_status_codes)
         except HTTPError as ex:
             logger.error(MSG_HTTP_ERROR)
+            logger.debug(ex.response.text)
             logger.error("Error (%s) - %s", ex.response.status_code, ex.response.reason)
         except ValueError as ex:
             logger.error(MSG_JSON_DECODE_ERROR)

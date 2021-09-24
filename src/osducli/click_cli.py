@@ -15,8 +15,8 @@ import logging
 from os import path
 
 import click
-from osducli.config import CLI_ENV_VAR_PREFIX, CLIConfig
 
+from osducli.config import CLI_ENV_VAR_PREFIX, CLIConfig
 from osducli.log import get_logger
 from osducli.state import get_default_config
 
