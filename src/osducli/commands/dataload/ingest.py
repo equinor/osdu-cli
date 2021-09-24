@@ -41,7 +41,7 @@ logger = get_logger(__name__)
     required=True,
 )
 @click.option("-f", "--files", help="Associated files to upload for Work-Products.")
-@click.option("-b", "--batch", help="Batch size.", type=int, default=1, show_default=True)
+@click.option("-b", "--batch", help="Batch size.", type=int, default=100, show_default=True)
 @click.option(
     "-rl",
     "--runid-log",
@@ -57,7 +57,7 @@ def _click_command(
     state: State,
     path: str,
     files: str,
-    batch: int = 1,
+    batch: int = 100,
     runid_log: str = None,
     wait: bool = False,
     simulate: bool = False,
@@ -116,10 +116,28 @@ def _ingest_files(
                 object_to_ingest = _update_legal_and_acl_tags_all(
                     config, data_object["ReferenceData"]
                 )
-                data_type = "ReferenceData"
+                data_objects += object_to_ingest
+                _process_batch(
+                    config,
+                    batch_size,
+                    "ReferenceData",
+                    data_objects,
+                    runids,
+                    runid_log_handle,
+                    simulate,
+                )
             elif "MasterData" in data_object and len(data_object["MasterData"]) > 0:
                 object_to_ingest = _update_legal_and_acl_tags_all(config, data_object["MasterData"])
-                data_type = "MasterData"
+                data_objects += object_to_ingest
+                _process_batch(
+                    config,
+                    batch_size,
+                    "MasterData",
+                    data_objects,
+                    runids,
+                    runid_log_handle,
+                    simulate,
+                )
             elif "Data" in data_object:
                 data_type = "Data"
                 object_to_ingest = _update_work_products_metadata(
@@ -128,15 +146,8 @@ def _ingest_files(
                 _create_and_submit(
                     config, data_type, object_to_ingest, runids, runid_log_handle, simulate
                 )
-                continue
-
-            data_objects.append(object_to_ingest)
-
-            _process_batch(
-                config, batch_size, data_type, data_objects, runids, runid_log_handle, simulate
-            )
     finally:
-        if runid_log is not None:
+        if runid_log_handle is not None:
             runid_log_handle.close()
 
     if wait and not simulate:
@@ -215,26 +226,30 @@ def _upload_file(config: CLIConfig, filepath):
 
 
 def _update_work_products_metadata(config: CLIConfig, data, files, simulate):
-    _update_legal_and_acl_tags(config, data["WorkProduct"])
-    _update_legal_and_acl_tags_all(config, data["WorkProductComponents"])
-    _update_legal_and_acl_tags_all(config, data["Datasets"])
+    if "WorkProduct" in data:
+        _update_legal_and_acl_tags(config, data["WorkProduct"])
+    if "WorkProductComponents" in data:
+        _update_legal_and_acl_tags_all(config, data["WorkProductComponents"])
+    if "Datasets" in data:
+        _update_legal_and_acl_tags_all(config, data["Datasets"])
 
-    # if files is specified then upload any needed data.
-    if files:
-        for dataset in data.get("Datasets"):
-            file_source_info = (
-                dataset.get("data", {}).get("DatasetProperties", {}).get("FileSourceInfo")
-            )
-            # only process if FileSource isn't already specified
-            if file_source_info and not file_source_info.get("FileSource"):
-                if not simulate:
-                    file_source_info["FileSource"] = _upload_file(
-                        config, os.path.join(files, file_source_info["Name"])
-                    )
-            else:
-                logger.info(
-                    "FileSource already especified for '%s' - skipping.", file_source_info["Name"]
+        # if files is specified then upload any needed data.
+        if files:
+            for dataset in data.get("Datasets"):
+                file_source_info = (
+                    dataset.get("data", {}).get("DatasetProperties", {}).get("FileSourceInfo")
                 )
+                # only process if FileSource isn't already specified
+                if file_source_info and not file_source_info.get("FileSource"):
+                    if not simulate:
+                        file_source_info["FileSource"] = _upload_file(
+                            config, os.path.join(files, file_source_info["Name"])
+                        )
+                else:
+                    logger.info(
+                        "FileSource already especified for '%s' - skipping.",
+                        file_source_info["Name"],
+                    )
 
     # TO DO: Here we scan by name from filemap
     # with open(file_location_map) as file:

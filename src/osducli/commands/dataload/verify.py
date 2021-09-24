@@ -28,11 +28,11 @@ logger = get_logger(__name__)
     type=click.Path(exists=True, file_okay=True, dir_okay=True, readable=True, resolve_path=True),
     required=True,
 )
-@click.option("-b", "--batch", help="Batch size.", type=int, default=20, show_default=True)
+@click.option("-b", "--batch", help="Batch size.", type=int, default=100, show_default=True)
 @click.option("--batch-across-files", is_flag=True, help="Create batches across files for speed.")
 @handle_cli_exceptions
 @command_with_output(None)
-def _click_command(state: State, path: str, batch: int = 1, batch_across_files=False):
+def _click_command(state: State, path: str, batch: int = 100, batch_across_files=False):
     """Verify if records exist in OSDU.
 
     Note that this doesn't support versioning - success indicates that
