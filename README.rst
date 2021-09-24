@@ -28,6 +28,12 @@ For more information, specify the `-h` flag:
 Change Log
 ==========
 
+0.0.13
+------
+
+- workflow register / unregister commands
+- dataload ingest - wait and simulate options
+
 0.0.12
 ------
 
