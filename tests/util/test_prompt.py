@@ -44,14 +44,14 @@ class TestPrompt(unittest.TestCase):
     @mock.patch("sys.stdin.isatty", return_value=True)
     def test_prompt_msg(self, _):
         expected_result = "This is my response."
-        with mock.patch("osducli.prompt._input", return_value=expected_result):
+        with mock.patch("osducli.util.prompt._input", return_value=expected_result):
             actual_result = prompt("Please enter some text: ")
             self.assertEqual(expected_result, actual_result)
 
     @mock.patch("sys.stdin.isatty", return_value=True)
     def test_prompt_msg_empty_response_no_default(self, _):
         expected_result = ""
-        with mock.patch("osducli.prompt._input", return_value=expected_result):
+        with mock.patch("osducli.util.prompt._input", return_value=expected_result):
             actual_result = prompt("Please enter some text: ")
             self.assertEqual(expected_result, actual_result)
 
@@ -60,7 +60,7 @@ class TestPrompt(unittest.TestCase):
         default_value = "default_value"
         expected_result = default_value
         user_input = ""
-        with mock.patch("osducli.prompt._input", return_value=user_input):
+        with mock.patch("osducli.util.prompt._input", return_value=user_input):
             actual_result = prompt("Please enter some text: ", default_value)
             self.assertEqual(expected_result, actual_result)
 
@@ -69,7 +69,7 @@ class TestPrompt(unittest.TestCase):
         default_value = "default_value"
         user_input = "My response"
         expected_result = user_input
-        with mock.patch("osducli.prompt._input", return_value=user_input) as _input_mock:
+        with mock.patch("osducli.util.prompt._input", return_value=user_input) as _input_mock:
             with mock.patch("sys.stdout", new_callable=StringIO):
                 actual_result = prompt("Please enter some text []: ", default_value)
                 self.assertEqual(expected_result, actual_result)
@@ -82,7 +82,7 @@ class TestPrompt(unittest.TestCase):
         user_input = ""
         expected_result = default_value
         expected_displayed_default = default_value[0 : max_default_len - 2] + ".."
-        with mock.patch("osducli.prompt._input", return_value=user_input) as _input_mock:
+        with mock.patch("osducli.util.prompt._input", return_value=user_input) as _input_mock:
             with mock.patch("sys.stdout", new_callable=StringIO):
                 actual_result = prompt(
                     "Please enter some text []: ",
@@ -97,14 +97,14 @@ class TestPrompt(unittest.TestCase):
     @mock.patch("sys.stdin.isatty", return_value=True)
     def test_prompt_msg_question_no_help_string(self, _):
         expected_result = "?"
-        with mock.patch("osducli.prompt._input", return_value="?"):
+        with mock.patch("osducli.util.prompt._input", return_value="?"):
             actual_result = prompt("Please enter some text: ")
             self.assertEqual(expected_result, actual_result)
 
     @mock.patch("sys.stdin.isatty", return_value=True)
     def test_prompt_msg_question_with_help_string(self, _):
         expected_result = "My response"
-        with mock.patch("osducli.prompt._input", side_effect=["?", expected_result]):
+        with mock.patch("osducli.util.prompt._input", side_effect=["?", expected_result]):
             with mock.patch("sys.stdout", new_callable=StringIO) as mock_stdout:
                 actual_result = prompt("Please enter some text: ", help_string="Anything you want!")
                 self.assertEqual(expected_result, actual_result)
@@ -115,7 +115,7 @@ class TestPrompt(unittest.TestCase):
     @mock.patch("sys.stdin.isatty", return_value=True)
     def test_prompt_int(self, _):
         my_response = "42"
-        with mock.patch("osducli.prompt._input", return_value=my_response):
+        with mock.patch("osducli.util.prompt._input", return_value=my_response):
             actual_result = prompt_int("Please enter a number: ")
             self.assertEqual(int(my_response), actual_result)
 
@@ -124,7 +124,7 @@ class TestPrompt(unittest.TestCase):
         my_response = ""
         with mock.patch("logging.Logger.warning") as mock_log_warn:
             with self.assertRaises(StopIteration):
-                with mock.patch("osducli.prompt._input", side_effect=[my_response]):
+                with mock.patch("osducli.util.prompt._input", side_effect=[my_response]):
                     prompt_int("Please enter some text: ")
             mock_log_warn.assert_called_once_with("%s is not a valid number", my_response)
 
@@ -133,7 +133,7 @@ class TestPrompt(unittest.TestCase):
         my_response = "This is clearly not a number."
         with mock.patch("logging.Logger.warning") as mock_log_warn:
             with self.assertRaises(StopIteration):
-                with mock.patch("osducli.prompt._input", side_effect=[my_response]):
+                with mock.patch("osducli.util.prompt._input", side_effect=[my_response]):
                     prompt_int("Please enter some text: ")
             mock_log_warn.assert_called_once_with("%s is not a valid number", my_response)
 
@@ -142,14 +142,14 @@ class TestPrompt(unittest.TestCase):
         my_response = "?"
         with mock.patch("logging.Logger.warning") as mock_log_warn:
             with self.assertRaises(StopIteration):
-                with mock.patch("osducli.prompt._input", side_effect=["?"]):
+                with mock.patch("osducli.util.prompt._input", side_effect=["?"]):
                     prompt_int("Please enter a number: ")
             mock_log_warn.assert_called_once_with("%s is not a valid number", my_response)
 
     @mock.patch("sys.stdin.isatty", return_value=True)
     def test_prompt_int_question_with_help_string(self, _):
         my_response = "42"
-        with mock.patch("osducli.prompt._input", side_effect=["?", my_response]):
+        with mock.patch("osducli.util.prompt._input", side_effect=["?", my_response]):
             with mock.patch("sys.stdout", new_callable=StringIO) as mock_stdout:
                 actual_result = prompt_int(
                     "Please enter a number: ", help_string="Anything you want!"
@@ -226,46 +226,46 @@ class TestPrompt(unittest.TestCase):
     @mock.patch("sys.stdin.isatty", return_value=True)
     def test_prompt_y_n_yes(self, _):
         my_response = "y"
-        with mock.patch("osducli.prompt._input", return_value=my_response):
+        with mock.patch("osducli.util.prompt._input", return_value=my_response):
             actual_result = prompt_y_n("Do you accept?")
             self.assertTrue(actual_result)
 
     @mock.patch("sys.stdin.isatty", return_value=True)
     def test_prompt_y_n_no(self, _):
         my_response = "n"
-        with mock.patch("osducli.prompt._input", return_value=my_response):
+        with mock.patch("osducli.util.prompt._input", return_value=my_response):
             actual_result = prompt_y_n("Do you accept?")
             self.assertFalse(actual_result)
 
     @mock.patch("sys.stdin.isatty", return_value=True)
     def test_prompt_y_n_yes_caps(self, _):
         my_response = "Y"
-        with mock.patch("osducli.prompt._input", return_value=my_response):
+        with mock.patch("osducli.util.prompt._input", return_value=my_response):
             actual_result = prompt_y_n("Do you accept?")
             self.assertTrue(actual_result)
 
     @mock.patch("sys.stdin.isatty", return_value=True)
     def test_prompt_y_n_no_caps(self, _):
         my_response = "N"
-        with mock.patch("osducli.prompt._input", return_value=my_response):
+        with mock.patch("osducli.util.prompt._input", return_value=my_response):
             actual_result = prompt_y_n("Do you accept?")
             self.assertFalse(actual_result)
 
     @mock.patch("sys.stdin.isatty", return_value=True)
     def test_prompt_y_n_empty_response(self, _):
         with self.assertRaises(StopIteration):
-            with mock.patch("osducli.prompt._input", side_effect=[""]):
+            with mock.patch("osducli.util.prompt._input", side_effect=[""]):
                 prompt_y_n("Do you accept?")
 
     @mock.patch("sys.stdin.isatty", return_value=True)
     def test_prompt_y_n_question_no_help_string(self, _):
         with self.assertRaises(StopIteration):
-            with mock.patch("osducli.prompt._input", side_effect=["?"]):
+            with mock.patch("osducli.util.prompt._input", side_effect=["?"]):
                 prompt_y_n("Do you accept?")
 
     @mock.patch("sys.stdin.isatty", return_value=True)
     def test_prompt_y_n_question_with_help_string(self, _):
-        with mock.patch("osducli.prompt._input", side_effect=["?", "y"]):
+        with mock.patch("osducli.util.prompt._input", side_effect=["?", "y"]):
             with mock.patch("sys.stdout", new_callable=StringIO) as mock_stdout:
                 actual_result = prompt_y_n(
                     "Do you accept?", help_string="y to accept conditions; no otherwise"
@@ -275,7 +275,7 @@ class TestPrompt(unittest.TestCase):
 
     @mock.patch("sys.stdin.isatty", return_value=True)
     def test_prompt_y_n_default(self, _):
-        with mock.patch("osducli.prompt._input", return_value=""):
+        with mock.patch("osducli.util.prompt._input", return_value=""):
             actual_result = prompt_y_n("Do you accept?", default="y")
             self.assertTrue(actual_result)
 
@@ -283,46 +283,46 @@ class TestPrompt(unittest.TestCase):
     @mock.patch("sys.stdin.isatty", return_value=True)
     def test_prompt_t_f_yes(self, _):
         my_response = "t"
-        with mock.patch("osducli.prompt._input", return_value=my_response):
+        with mock.patch("osducli.util.prompt._input", return_value=my_response):
             actual_result = prompt_t_f("Do you accept?")
             self.assertTrue(actual_result)
 
     @mock.patch("sys.stdin.isatty", return_value=True)
     def test_prompt_t_f_no(self, _):
         my_response = "f"
-        with mock.patch("osducli.prompt._input", return_value=my_response):
+        with mock.patch("osducli.util.prompt._input", return_value=my_response):
             actual_result = prompt_t_f("Do you accept?")
             self.assertFalse(actual_result)
 
     @mock.patch("sys.stdin.isatty", return_value=True)
     def test_prompt_t_f_yes_caps(self, _):
         my_response = "T"
-        with mock.patch("osducli.prompt._input", return_value=my_response):
+        with mock.patch("osducli.util.prompt._input", return_value=my_response):
             actual_result = prompt_t_f("Do you accept?")
             self.assertTrue(actual_result)
 
     @mock.patch("sys.stdin.isatty", return_value=True)
     def test_prompt_t_f_no_caps(self, _):
         my_response = "F"
-        with mock.patch("osducli.prompt._input", return_value=my_response):
+        with mock.patch("osducli.util.prompt._input", return_value=my_response):
             actual_result = prompt_t_f("Do you accept?")
             self.assertFalse(actual_result)
 
     @mock.patch("sys.stdin.isatty", return_value=True)
     def test_prompt_t_f_empty_response(self, _):
         with self.assertRaises(StopIteration):
-            with mock.patch("osducli.prompt._input", side_effect=[""]):
+            with mock.patch("osducli.util.prompt._input", side_effect=[""]):
                 prompt_t_f("Do you accept?")
 
     @mock.patch("sys.stdin.isatty", return_value=True)
     def test_prompt_t_f_question_no_help_string(self, _):
         with self.assertRaises(StopIteration):
-            with mock.patch("osducli.prompt._input", side_effect=["?"]):
+            with mock.patch("osducli.util.prompt._input", side_effect=["?"]):
                 prompt_t_f("Do you accept?")
 
     @mock.patch("sys.stdin.isatty", return_value=True)
     def test_prompt_t_f_question_with_help_string(self, _):
-        with mock.patch("osducli.prompt._input", side_effect=["?", "t"]):
+        with mock.patch("osducli.util.prompt._input", side_effect=["?", "t"]):
             with mock.patch("sys.stdout", new_callable=StringIO) as mock_stdout:
                 actual_result = prompt_t_f(
                     "Do you accept?", help_string="t to accept conditions; no otherwise"
@@ -332,14 +332,14 @@ class TestPrompt(unittest.TestCase):
 
     @mock.patch("sys.stdin.isatty", return_value=True)
     def test_prompt_t_f_default(self, _):
-        with mock.patch("osducli.prompt._input", return_value=""):
+        with mock.patch("osducli.util.prompt._input", return_value=""):
             actual_result = prompt_t_f("Do you accept?", default="t")
             self.assertTrue(actual_result)
 
     @mock.patch("sys.stdin.isatty", return_value=True)
     def test_prompt_choice_list(self, _):
         a_list = ["red", "blue", "yellow", "green"]
-        with mock.patch("osducli.prompt._input", return_value="3"):
+        with mock.patch("osducli.util.prompt._input", return_value="3"):
             actual_result = prompt_choice_list("What is your favourite color?", a_list)
             self.assertEqual(2, actual_result)
 
@@ -351,7 +351,7 @@ class TestPrompt(unittest.TestCase):
             {"name": "yellow", "desc": " A desc."},
             {"name": "green", "desc": " A desc."},
         ]
-        with mock.patch("osducli.prompt._input", return_value="2"):
+        with mock.patch("osducli.util.prompt._input", return_value="2"):
             actual_result = prompt_choice_list("What is your favourite color?", a_list)
             self.assertEqual(1, actual_result)
 
@@ -360,7 +360,7 @@ class TestPrompt(unittest.TestCase):
         a_list = ["red", "blue", "yellow", "green"]
         with mock.patch("logging.Logger.warning") as mock_log_warn:
             with self.assertRaises(StopIteration):
-                with mock.patch("osducli.prompt._input", side_effect=["5"]):
+                with mock.patch("osducli.util.prompt._input", side_effect=["5"]):
                     prompt_choice_list("What is your favourite color?", a_list)
             mock_log_warn.assert_called_once_with("Valid values are %s", mock.ANY)
 
@@ -369,14 +369,14 @@ class TestPrompt(unittest.TestCase):
         a_list = ["red", "blue", "yellow", "green"]
         with mock.patch("logging.Logger.warning") as mock_log_warn:
             with self.assertRaises(StopIteration):
-                with mock.patch("osducli.prompt._input", side_effect=["?"]):
+                with mock.patch("osducli.util.prompt._input", side_effect=["?"]):
                     prompt_choice_list("What is your favourite color?", a_list)
             mock_log_warn.assert_called_once_with("Valid values are %s", mock.ANY)
 
     @mock.patch("sys.stdin.isatty", return_value=True)
     def test_prompt_choice_list_question_with_help_string(self, _):
         a_list = ["red", "blue", "yellow", "green"]
-        with mock.patch("osducli.prompt._input", side_effect=["?", "1"]):
+        with mock.patch("osducli.util.prompt._input", side_effect=["?", "1"]):
             with mock.patch("sys.stdout", new_callable=StringIO) as mock_stdout:
                 actual_result = prompt_choice_list(
                     "What is your favourite color?", a_list, help_string="Your real favourite."
