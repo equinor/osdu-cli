@@ -15,6 +15,7 @@ import requests
 from osducli.click_cli import State, command_with_output
 from osducli.cliclient import CliOsduClient, handle_cli_exceptions
 from osducli.commands.dataload.status import check_status
+from osducli.commands.dataload.verify import batch_verify
 from osducli.config import (
     CONFIG_ACL_OWNER,
     CONFIG_ACL_VIEWER,
@@ -41,7 +42,7 @@ logger = get_logger(__name__)
     required=True,
 )
 @click.option("-f", "--files", help="Associated files to upload for Work-Products.")
-@click.option("-b", "--batch", help="Batch size.", type=int, default=100, show_default=True)
+@click.option("-b", "--batch", help="Batch size.", type=int, default=200, show_default=True)
 @click.option(
     "-rl",
     "--runid-log",
@@ -50,6 +51,14 @@ logger = get_logger(__name__)
 @click.option(
     "-w", "--wait", help="Whether to wait for runs to complete.", is_flag=True, show_default=True
 )
+@click.option(
+    "-s",
+    "--skip-existing",
+    help="Skip reloading records that already exist.",
+    is_flag=True,
+    default=False,
+    show_default=True,
+)
 @click.option("--simulate", help="Simulate ingestion only.", is_flag=True, show_default=True)
 @handle_cli_exceptions
 @command_with_output(None)
@@ -57,13 +66,14 @@ def _click_command(
     state: State,
     path: str,
     files: str,
-    batch: int = 100,
+    batch: int = 200,
     runid_log: str = None,
     wait: bool = False,
+    skip_existing: str = False,
     simulate: bool = False,
 ):
     """Ingest files into OSDU."""
-    return ingest(state, path, files, batch, runid_log, wait, simulate)
+    return ingest(state, path, files, batch, runid_log, wait, skip_existing, simulate)
 
 
 def ingest(
@@ -73,6 +83,7 @@ def ingest(
     batch_size: int = 1,
     runid_log: str = None,
     wait: bool = False,
+    skip_existing: bool = False,
     simulate: bool = False,
 ) -> dict:
     """Ingest files into OSDU
@@ -87,14 +98,14 @@ def ingest(
     logger.debug("Files list: %s", files)
 
     runids = _ingest_files(
-        state.config, manifest_files, files, runid_log, batch_size, wait, simulate
+        state.config, manifest_files, files, runid_log, batch_size, wait, skip_existing, simulate
     )
     print(runids)
     return runids
 
 
 def _ingest_files(
-    config: CLIConfig, manifest_files, files, runid_log, batch_size, wait, simulate
+    config: CLIConfig, manifest_files, files, runid_log, batch_size, wait, skip_existing, simulate
 ):  # noqa: C901 pylint: disable=R0912
     logger.info("Files list: %s", manifest_files)
     runids = []
@@ -108,15 +119,13 @@ def _ingest_files(
         for filepath in manifest_files:
             if filepath.endswith(".json"):
                 with open(filepath) as file:
-                    data_object = json.load(file)
+                    manifest = json.load(file)
 
-            if not data_object:
+            if not manifest:
                 logger.error("Error with file %s. File is empty.", filepath)
-            elif "ReferenceData" in data_object and len(data_object["ReferenceData"]) > 0:
-                object_to_ingest = _update_legal_and_acl_tags_all(
-                    config, data_object["ReferenceData"]
-                )
-                data_objects += object_to_ingest
+            elif "ReferenceData" in manifest and len(manifest["ReferenceData"]) > 0:
+                _update_legal_and_acl_tags_all(config, manifest["ReferenceData"])
+                data_objects += manifest["ReferenceData"]
                 _process_batch(
                     config,
                     batch_size,
@@ -124,11 +133,12 @@ def _ingest_files(
                     data_objects,
                     runids,
                     runid_log_handle,
+                    skip_existing,
                     simulate,
                 )
-            elif "MasterData" in data_object and len(data_object["MasterData"]) > 0:
-                object_to_ingest = _update_legal_and_acl_tags_all(config, data_object["MasterData"])
-                data_objects += object_to_ingest
+            elif "MasterData" in manifest and len(manifest["MasterData"]) > 0:
+                _update_legal_and_acl_tags_all(config, manifest["MasterData"])
+                data_objects += manifest["MasterData"]
                 _process_batch(
                     config,
                     batch_size,
@@ -136,16 +146,12 @@ def _ingest_files(
                     data_objects,
                     runids,
                     runid_log_handle,
+                    skip_existing,
                     simulate,
                 )
-            elif "Data" in data_object:
-                data_type = "Data"
-                object_to_ingest = _update_work_products_metadata(
-                    config, data_object["Data"], files, simulate
-                )
-                _create_and_submit(
-                    config, data_type, object_to_ingest, runids, runid_log_handle, simulate
-                )
+            elif "Data" in manifest:
+                _update_work_products_metadata(config, manifest["Data"], files, simulate)
+                _create_and_submit(config, manifest, runids, runid_log_handle, simulate)
     finally:
         if runid_log_handle is not None:
             runid_log_handle.close()
@@ -156,7 +162,28 @@ def _ingest_files(
     return runids
 
 
-def _process_batch(config, batch_size, data_type, data_objects, runids, runid_log_handle, simulate):
+def _process_batch(
+    config, batch_size, data_type, data_objects, runids, runid_log_handle, skip_existing, simulate
+):
+    if skip_existing:
+        ids_to_verify = []
+        found = []
+        not_found = []
+        original_length = len(data_objects)
+        for data in data_objects:
+            if "id" in data:
+                ids_to_verify.append(data.get("id"))
+        batch_verify(config, batch_size, ids_to_verify, found, not_found, True)
+        data_objects = [
+            data for data in data_objects if "id" in data and data.get("id") in not_found
+        ]
+        logger.info(
+            "%i of %i records already exist. Submitting %i records",
+            len(found),
+            original_length,
+            len(data_objects),
+        )
+
     while len(data_objects) > 0:
         total_size = len(data_objects)
         batch_size = min(batch_size, total_size)
@@ -166,17 +193,18 @@ def _process_batch(config, batch_size, data_type, data_objects, runids, runid_lo
             f"Processing batch - total {total_size}, batch size {len(current_batch)}, remaining {len(data_objects)}"
         )
 
-        _create_and_submit(config, data_type, current_batch, runids, runid_log_handle, simulate)
+        manifest = {"kind": "osdu:wks:Manifest:1.0.0", data_type: current_batch}
+        _create_and_submit(config, manifest, runids, runid_log_handle, simulate)
 
 
-def _create_and_submit(config, data_type, data, runids, runid_log_handle, simulate):
-    request_data = _populate_request_body(config, data, data_type)
+def _create_and_submit(config, manifest, runids, runid_log_handle, simulate):
+    request_data = _populate_request_body(config, manifest)
     if not simulate:
         connection = CliOsduClient(config)
         response_json = connection.cli_post_returning_json(
             CONFIG_WORKFLOW_URL, "workflow/Osdu_ingest/workflowRun", request_data
         )
-        logger.debug("Request to be sent %s", response_json)
+        logger.debug("Response %s", response_json)
 
         runid = response_json.get("runId")
         logger.info("Returned runID: %s", runid)
@@ -185,17 +213,17 @@ def _create_and_submit(config, data_type, data, runids, runid_log_handle, simula
         runids.append(runid)
 
 
-def _populate_request_body(config: CLIConfig, data, data_type):
+def _populate_request_body(config: CLIConfig, manifest):
     request = {
         "executionContext": {
             "Payload": {
                 "AppKey": "osdu-cli",
                 "data-partition-id": config.get("core", CONFIG_DATA_PARTITION_ID),
             },
-            "manifest": {"kind": "osdu:wks:Manifest:1.0.0", data_type: data},
+            "manifest": manifest,
         }
     }
-    logger.debug("Request to be sent %s", request)
+    logger.debug("Request to be sent %s", json.dumps(request, indent=2))
     return request
 
 
@@ -271,17 +299,15 @@ def _update_work_products_metadata(config: CLIConfig, data, files, simulate):
     #     logger.warn(f"Filemap {file_name} does not exist")
 
     # logger.debug(f"data to upload workproduct \n {data}")
-    return data
 
 
 def _update_legal_and_acl_tags_all(config: CLIConfig, data):
-    for datum in data:
-        _update_legal_and_acl_tags(config, datum)
-    return data
+    for _datu in data:
+        _update_legal_and_acl_tags(config, _datu)
 
 
-def _update_legal_and_acl_tags(config: CLIConfig, datum):
-    datum["legal"]["legaltags"] = [config.get("core", CONFIG_LEGAL_TAG)]
-    datum["legal"]["otherRelevantDataCountries"] = ["US"]
-    datum["acl"]["viewers"] = [config.get("core", CONFIG_ACL_VIEWER)]
-    datum["acl"]["owners"] = [config.get("core", CONFIG_ACL_OWNER)]
+def _update_legal_and_acl_tags(config: CLIConfig, datu):
+    datu["legal"]["legaltags"] = [config.get("core", CONFIG_LEGAL_TAG)]
+    datu["legal"]["otherRelevantDataCountries"] = ["US"]
+    datu["acl"]["viewers"] = [config.get("core", CONFIG_ACL_VIEWER)]
+    datu["acl"]["owners"] = [config.get("core", CONFIG_ACL_OWNER)]

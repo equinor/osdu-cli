@@ -28,11 +28,16 @@ logger = get_logger(__name__)
     type=click.Path(exists=True, file_okay=True, dir_okay=True, readable=True, resolve_path=True),
     required=True,
 )
-@click.option("-b", "--batch", help="Batch size.", type=int, default=100, show_default=True)
-@click.option("--batch-across-files", is_flag=True, help="Create batches across files for speed.")
+@click.option("-b", "--batch", help="Batch size.", type=int, default=200, show_default=True)
+@click.option(
+    "--batch-across-files",
+    is_flag=True,
+    default=True,
+    help="Create batches across files for speed.",
+)
 @handle_cli_exceptions
 @command_with_output(None)
-def _click_command(state: State, path: str, batch: int = 100, batch_across_files=False):
+def _click_command(state: State, path: str, batch: int = 200, batch_across_files=True):
     """Verify if records exist in OSDU.
 
     Note that this doesn't support versioning - success indicates that
@@ -71,21 +76,30 @@ def _verify_ids(config: CLIConfig, record_ids):
 
     failed = [x for x in record_ids if x not in success]
     if len(failed) > 0:
-        logger.info("Could not find %i records with Ids: %s", len(failed), failed)
+        logger.debug(
+            "Checked %i records. Could not find %i records with Ids: %s",
+            len(record_ids),
+            len(failed),
+            failed,
+        )
 
     return success, failed
 
 
-def _process_batch(state, batch_size, ids_to_verify, success, failed, process_all_ids=False):
+def batch_verify(config, batch_size, ids_to_verify, success, failed, process_all_ids=False):
+    """Verify a list of id's in batches"""
     while len(ids_to_verify) >= batch_size or (process_all_ids and len(ids_to_verify) > 0):
         total_size = len(ids_to_verify)
         batch_size = min(batch_size, total_size)
         current_batch = ids_to_verify[:batch_size]
         del ids_to_verify[:batch_size]
-        print(
-            f"Processing batch - total {total_size}, batch size {len(current_batch)}, remaining {len(ids_to_verify)}"
+        logger.debug(
+            "Processing batch - total %i, batch size %i, remaining %i",
+            total_size,
+            len(current_batch),
+            len(ids_to_verify),
         )
-        _s, _f = _verify_ids(state.config, current_batch)
+        _s, _f = _verify_ids(config, current_batch)
         success.extend(_s)
         failed.extend(_f)
 
@@ -130,14 +144,14 @@ def verify(
                     if "id" in ingested_datum:
                         ids_to_verify.append(ingested_datum.get("id"))
 
-                _process_batch(
-                    state, batch_size, ids_to_verify, success, failed, not batch_across_files
+                batch_verify(
+                    state.config, batch_size, ids_to_verify, success, failed, not batch_across_files
                 )
 
     # If batching across files then there might be records here so clear those.
     if len(ids_to_verify) > 0:
         logger.info("Searching remaining records with batch size %s", len(ids_to_verify))
-        _process_batch(state, batch_size, ids_to_verify, success, failed, True)
+        batch_verify(state.config, batch_size, ids_to_verify, success, failed, True)
 
     if len(failed) == 0:
         print(
@@ -145,5 +159,5 @@ def verify(
         )
     else:
         logger.info("Number of Records that exist in OSDU: %s", len(success))
-        logger.info("Record IDs that could not be ingested")
+        logger.info("Record IDs that do not exist")
         print(failed)
