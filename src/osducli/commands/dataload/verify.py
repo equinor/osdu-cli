@@ -48,6 +48,8 @@ def _click_command(state: State, path: str, batch: int = 200, batch_across_files
 
 def _create_search_query(record_ids):
     final_query = " OR ".join('"' + x + '"' for x in record_ids)
+    final_query = f"id:({final_query})"
+
     return {
         "kind": "*:*:*:*.*.*",
         "limit": 10000,
@@ -61,7 +63,7 @@ def _verify_ids(config: CLIConfig, record_ids):
     success = []
     failed = []
     search_query = _create_search_query(record_ids)
-    logger.debug("search query %s", search_query)
+    logger.debug("search query %s", json.dumps(search_query))
 
     connection = CliOsduClient(config)
     response_json = connection.cli_post_returning_json(
@@ -100,6 +102,7 @@ def batch_verify(config, batch_size, ids_to_verify, success, failed, process_all
             len(ids_to_verify),
         )
         _s, _f = _verify_ids(config, current_batch)
+
         success.extend(_s)
         failed.extend(_f)
 
