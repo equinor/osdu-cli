@@ -19,9 +19,7 @@ MSG_INTRO = (
     "setting some default values.\n"
 )
 MSG_CLOSING = (
-    "\nYou're all set! Here are some commands to try:\n"
-    " $ osducli status\n"
-    " $ osducli list records\n"
+    "\nYou're all set! Here are some commands to try:\n $ osdu status\n $ osdu list records\n"
 )
 
 MSG_GLOBAL_SETTINGS_LOCATION = "Your settings can be found at {}"

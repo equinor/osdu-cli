@@ -36,20 +36,20 @@ more information.
 The first time you use the CLI you should run the configure command to provide connection information and other important configuration.
 
 ```bash
-osducli config update
+osdu config update
 ```
 
 Once configured use the CLI as shown below. Omitting a command will display a list of available options.
 
 ```bash
-osducli <command>
+osdu <command>
 ```
 
 For more information, specify the `-h` flag:
 
 ```bash
-osducli -h
-osducli <command> -h
+osdu -h
+osdu <command> -h
 ```
 
 ## Contributing

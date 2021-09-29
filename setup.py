@@ -58,5 +58,5 @@ setup(
     project_urls={
         "Issue Tracker": "https://github.com/equinor/osdu-cli/issues",
     },
-    entry_points={"console_scripts": ["osducli=osducli.__main__:main"]},
+    entry_points={"console_scripts": ["osdu=osducli.__main__:main"]},
 )

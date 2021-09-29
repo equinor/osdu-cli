@@ -28,6 +28,13 @@ For more information, specify the `-h` flag:
 Change Log
 ==========
 
+0.0.14
+------
+- callable as osdu instead of osducli
+- search query & search id commands
+- dataload ingest --skip-existing option
+- Add legal service and list tags
+  
 0.0.13
 ------
 
