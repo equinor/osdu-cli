@@ -114,7 +114,8 @@ def cli(ctx):
 
     Welcome to the OSDU CLI!
 
-    Note: This is currently a work in progress and may contain bugs or breaking changes. Please share ideas / issues on the git page.
+    Note: This is currently a work in progress and may contain bugs or breaking changes.
+    Please share ideas / issues on the git page.
 
     Use `osducli version` to display the current version.
 

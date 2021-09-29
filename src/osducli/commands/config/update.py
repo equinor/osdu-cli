@@ -26,7 +26,6 @@ from osducli.commands.config.consts import (
     MSG_PROMPT_CONFIG_ENTITLEMENTS_URL,
     MSG_PROMPT_DATA_PARTITION,
     MSG_PROMPT_FILE_URL,
-    MSG_PROMPT_GLOBAL_OUTPUT,
     MSG_PROMPT_LEGAL_TAG,
     MSG_PROMPT_LEGAL_URL,
     MSG_PROMPT_MANAGE_GLOBAL,
@@ -39,7 +38,6 @@ from osducli.commands.config.consts import (
     MSG_PROMPT_TOKEN_ENDPOINT_URL,
     MSG_PROMPT_UNIT_URL,
     MSG_PROMPT_WORKFLOW_URL,
-    OUTPUT_LIST,
 )
 from osducli.commands.config.list import print_cur_configuration
 from osducli.config import (
@@ -144,7 +142,7 @@ def _configure_authentication(config):
         MSG_PROMPT_AUTHENTICATION_MODE,
         AUTHENTICATION_LIST,
         default=get_default_choice_index_from_config(
-            config, "core", "output", CONFIG_AUTHENTICATION_MODE, fallback=1
+            config, "core", CONFIG_AUTHENTICATION_MODE, AUTHENTICATION_LIST, fallback=1
         ),
     )
     config.set_value(
@@ -192,13 +190,6 @@ def _configure_authentication(config):
 
 
 def _configure_connection(config):  # noqa C901 pylint: disable=R0912
-    output_index = prompt_choice_list(
-        MSG_PROMPT_GLOBAL_OUTPUT,
-        OUTPUT_LIST,
-        default=get_default_choice_index_from_config(
-            config, "core", "output", OUTPUT_LIST, fallback=3
-        ),
-    )
     server = _prompt_default_from_config(MSG_PROMPT_SERVER, config, CONFIG_SERVER)
 
     entitlements_url = _prompt_default_from_config(
@@ -252,8 +243,6 @@ def _configure_connection(config):  # noqa C901 pylint: disable=R0912
     )
 
     # save the global config
-    config.set_value("core", "output", OUTPUT_LIST[output_index]["name"])
-
     if server != "":
         config.set_value("core", CONFIG_SERVER, server)
     if entitlements_url != "":

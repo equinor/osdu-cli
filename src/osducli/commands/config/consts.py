@@ -6,25 +6,6 @@
 
 """Constants for config commands"""
 
-OUTPUT_LIST = [
-    {"name": "json", "desc": "JSON formatted output that most closely matches API responses."},
-    {
-        "name": "jsonc",
-        "desc": "Colored JSON formatted output that most closely matches API responses.",
-    },
-    {"name": "table", "desc": "Human-readable output format."},
-    {"name": "tsv", "desc": "Tab- and Newline-delimited. Great for GREP, AWK, etc."},
-    {
-        "name": "yaml",
-        "desc": "YAML formatted output. An alternative to JSON. Great for configuration files.",
-    },
-    {
-        "name": "yamlc",
-        "desc": "Colored YAML formatted output. An alternative to JSON. Great for configuration files.",
-    },
-    {"name": "none", "desc": "No output, except for errors and warnings."},
-]
-
 AUTHENTICATION_LIST = [
     {
         "name": "refresh_token",
@@ -50,7 +31,6 @@ MSG_HEADING_ENV_VARS = "\nEnvironment variables:"
 
 MSG_PROMPT_CONFIG = "\nWhat config file do you want to use as the default?"
 MSG_PROMPT_MANAGE_GLOBAL = "\nDo you wish to change your settings?"
-MSG_PROMPT_GLOBAL_OUTPUT = "\nWhat default output format would you like?"
 MSG_PROMPT_SERVER = "\nOSDU API Server []: "
 MSG_PROMPT_CONFIG_ENTITLEMENTS_URL = "\nEntitlements API path []: "
 MSG_PROMPT_FILE_URL = "\nFile API path []: "
