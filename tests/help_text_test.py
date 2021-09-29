@@ -443,7 +443,7 @@ class HelpTextTests(unittest.TestCase):
 
         self.validate_output(
             "osducli search",
-            commands=("query",),
+            commands=("id", "query"),
         )
 
         self.validate_output(

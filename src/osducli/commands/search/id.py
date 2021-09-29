@@ -15,17 +15,16 @@ from osducli.cliclient import CliOsduClient, handle_cli_exceptions
 
 # click entry point
 @click.command()
-@click.option("-k", "--kind", "kind", help="kind to search for")
-@click.option("-id", "--id", "_id", help="id to search for")
+@click.argument("id")
 @handle_cli_exceptions
 @command_with_output(None)
-def _click_command(state: State, kind: str, _id: str):
-    """Query search service"""
-    return query(state, kind, _id)
+def _click_command(state: State, id: str):  # noqa:W1 pylint: disable=invalid-name,redefined-builtin
+    """Search for the specified id"""
+    return query(state, id)
 
 
-def query(state: State, kind: str, id: str):  # pylint: disable=invalid-name,redefined-builtin
-    """Query search service
+def query(state: State, id: str):  # TO FIX later pylint: disable=invalid-name,redefined-builtin
+    """Search for the specified id
 
     Args:
         state (State): Global state
@@ -33,6 +32,6 @@ def query(state: State, kind: str, id: str):  # pylint: disable=invalid-name,red
     connection = CliOsduClient(state.config)
 
     search_client = SearchClient(connection)
-    json_response = search_client.query(kind, id)
+    json_response = search_client.query_by_id(id)
 
     return json_response
