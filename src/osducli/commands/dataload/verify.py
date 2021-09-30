@@ -34,6 +34,7 @@ logger = get_logger(__name__)
     is_flag=True,
     default=True,
     help="Create batches across files for speed.",
+    show_default=True,
 )
 @handle_cli_exceptions
 @command_with_output(None)
@@ -153,7 +154,7 @@ def verify(
 
     # If batching across files then there might be records here so clear those.
     if len(ids_to_verify) > 0:
-        logger.info("Searching remaining records with batch size %s", len(ids_to_verify))
+        logger.debug("Searching remaining records with batch size %s", len(ids_to_verify))
         batch_verify(state.config, batch_size, ids_to_verify, success, failed, True)
 
     if len(failed) == 0:
@@ -162,5 +163,4 @@ def verify(
         )
     else:
         logger.info("Number of Records that exist in OSDU: %s", len(success))
-        logger.info("Record IDs that do not exist")
-        print(failed)
+        logger.info("%i Record IDs that do not exist: %s", len(failed), failed)

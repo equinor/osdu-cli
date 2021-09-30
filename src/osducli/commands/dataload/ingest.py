@@ -42,7 +42,16 @@ logger = get_logger(__name__)
     required=True,
 )
 @click.option("-f", "--files", help="Associated files to upload for Work-Products.")
-@click.option("-b", "--batch", help="Batch size.", type=int, default=200, show_default=True)
+@click.option(
+    "-b",
+    "--batch",
+    help="Batch size (per file). If not specified no batching is performed.",
+    is_flag=False,
+    flag_value=200,
+    type=int,
+    default=None,
+    show_default=True,
+)
 @click.option(
     "-rl",
     "--runid-log",
@@ -66,7 +75,7 @@ def _click_command(
     state: State,
     path: str,
     files: str,
-    batch: int = 200,
+    batch: int,
     runid_log: str = None,
     wait: bool = False,
     skip_existing: str = False,
@@ -104,9 +113,9 @@ def ingest(
     return runids
 
 
-def _ingest_files(
+def _ingest_files(  # noqa:C901 pylint: disable=R0912
     config: CLIConfig, manifest_files, files, runid_log, batch_size, wait, skip_existing, simulate
-):  # noqa: C901 pylint: disable=R0912
+):
     logger.info("Files list: %s", manifest_files)
     runids = []
     runid_log_handle = None
@@ -120,35 +129,45 @@ def _ingest_files(
             if filepath.endswith(".json"):
                 with open(filepath) as file:
                     manifest = json.load(file)
-
+            # Note this code currently assumes only one of MasterData, ReferenceData or Data exists!
             if not manifest:
                 logger.error("Error with file %s. File is empty.", filepath)
             elif "ReferenceData" in manifest and len(manifest["ReferenceData"]) > 0:
                 _update_legal_and_acl_tags_all(config, manifest["ReferenceData"])
-                data_objects += manifest["ReferenceData"]
-                _process_batch(
-                    config,
-                    batch_size,
-                    "ReferenceData",
-                    data_objects,
-                    runids,
-                    runid_log_handle,
-                    skip_existing,
-                    simulate,
-                )
+                if batch_size is None and not skip_existing:
+                    _create_and_submit(config, manifest, runids, runid_log_handle, simulate)
+                else:
+                    data_objects += manifest["ReferenceData"]
+                    if skip_existing and not batch_size:
+                        batch_size = len(data_objects)
+                    data_objects = _process_batch(
+                        config,
+                        batch_size,
+                        "ReferenceData",
+                        data_objects,
+                        runids,
+                        runid_log_handle,
+                        skip_existing,
+                        simulate,
+                    )
             elif "MasterData" in manifest and len(manifest["MasterData"]) > 0:
                 _update_legal_and_acl_tags_all(config, manifest["MasterData"])
-                data_objects += manifest["MasterData"]
-                _process_batch(
-                    config,
-                    batch_size,
-                    "MasterData",
-                    data_objects,
-                    runids,
-                    runid_log_handle,
-                    skip_existing,
-                    simulate,
-                )
+                if batch_size is None and not skip_existing:
+                    _create_and_submit(config, manifest, runids, runid_log_handle, simulate)
+                else:
+                    data_objects += manifest["MasterData"]
+                    if skip_existing and not batch_size:
+                        batch_size = len(data_objects)
+                    data_objects = _process_batch(
+                        config,
+                        batch_size,
+                        "MasterData",
+                        data_objects,
+                        runids,
+                        runid_log_handle,
+                        skip_existing,
+                        simulate,
+                    )
             elif "Data" in manifest:
                 _update_work_products_metadata(config, manifest["Data"], files, simulate)
                 _create_and_submit(config, manifest, runids, runid_log_handle, simulate)
@@ -195,6 +214,8 @@ def _process_batch(
 
         manifest = {"kind": "osdu:wks:Manifest:1.0.0", data_type: current_batch}
         _create_and_submit(config, manifest, runids, runid_log_handle, simulate)
+
+    return data_objects
 
 
 def _create_and_submit(config, manifest, runids, runid_log_handle, simulate):
