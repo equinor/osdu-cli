@@ -20,5 +20,5 @@ from ..groups.members import list_group_members
 @handle_cli_exceptions
 @command_with_output("members[*]")
 def _click_command(state: State, group: str):
-    """Delete members from a group."""
+    """List members in a group."""
     return list_group_members(state, group)
