@@ -54,7 +54,7 @@ setup(
     package_dir={"": "src"},
     py_modules=[splitext(basename(path))[0] for path in glob("src/*.py")],
     include_package_data=True,
-    install_requires=["click", "jmespath", "osdu-sdk==0.0.4", "requests", "tabulate", "msal"],
+    install_requires=["click", "jmespath", "osdu-sdk==0.0.5", "requests", "tabulate", "msal"],
     project_urls={
         "Issue Tracker": "https://github.com/equinor/osdu-cli/issues",
     },
