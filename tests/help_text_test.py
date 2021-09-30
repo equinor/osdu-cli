@@ -370,7 +370,7 @@ class HelpTextTests(unittest.TestCase):
         an entry for each subgroup."""
 
         self.validate_output(
-            "osducli",
+            "osdu",
             subgroups=(
                 "config",
                 "dataload",
@@ -389,7 +389,7 @@ class HelpTextTests(unittest.TestCase):
         )
 
         self.validate_output(
-            "osducli config",
+            "osdu config",
             commands=(
                 "default",
                 "list",
@@ -398,7 +398,7 @@ class HelpTextTests(unittest.TestCase):
         )
 
         self.validate_output(
-            "osducli dataload",
+            "osdu dataload",
             commands=(
                 "ingest",
                 "status",
@@ -407,33 +407,33 @@ class HelpTextTests(unittest.TestCase):
         )
 
         self.validate_output(
-            "osducli entitlements",
+            "osdu entitlements",
             subgroups=("groups", "members"),
             commands=("mygroups",),
         )
 
         self.validate_output(
-            "osducli entitlements groups",
+            "osdu entitlements groups",
             commands=("add", "delete", "members"),
         )
 
         self.validate_output(
-            "osducli entitlements members",
+            "osdu entitlements members",
             commands=("add", "list"),
         )
 
         self.validate_output(
-            "osducli legal",
+            "osdu legal",
             commands=("listtags",),
         )
 
         self.validate_output(
-            "osducli list",
+            "osdu list",
             commands=("records",),
         )
 
         self.validate_output(
-            "osducli schema",
+            "osdu schema",
             commands=(
                 "add",
                 "get",
@@ -442,17 +442,17 @@ class HelpTextTests(unittest.TestCase):
         )
 
         self.validate_output(
-            "osducli search",
+            "osdu search",
             commands=("id", "query"),
         )
 
         self.validate_output(
-            "osducli unit",
+            "osdu unit",
             commands=("list",),
         )
 
         self.validate_output(
-            "osducli workflow",
+            "osdu workflow",
             commands=("list",),
         )
 
