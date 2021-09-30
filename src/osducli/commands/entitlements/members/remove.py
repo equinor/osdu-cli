@@ -9,23 +9,23 @@
 import click
 from osdu.entitlements import EntitlementsClient
 
-from osducli.click_cli import State, command_with_output
+from osducli.click_cli import State, global_params
 from osducli.cliclient import CliOsduClient, handle_cli_exceptions
 
 
 # click entry point
 @click.command()
-@click.option("-m", "--member", help="Email of the member to be added.", required=True)
+@click.option("-m", "--member", help="Email of the member to be remove.", required=True)
 @click.option("-g", "--group", help="Email address of the group", required=True)
 @handle_cli_exceptions
-@command_with_output(None)
+@global_params
 def _click_command(state: State, member: str, group: str):
     """Remove member from a group."""
     return add_member(state, member, group)
 
 
 def add_member(state: State, member: str, group: str) -> dict:
-    """"Remove member from a group.
+    """ "Remove member from a group.
 
     Args:
         state (State): Global state
@@ -38,5 +38,4 @@ def add_member(state: State, member: str, group: str) -> dict:
     connection = CliOsduClient(state.config)
 
     entitlements_client = EntitlementsClient(connection)
-    json_response = entitlements_client.add_member_to_group(member, group)
-    return json_response
+    entitlements_client.remove_member_from_group(member, group)

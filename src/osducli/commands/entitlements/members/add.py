@@ -17,7 +17,14 @@ from osducli.cliclient import CliOsduClient, handle_cli_exceptions
 @click.command()
 @click.option("-m", "--member", help="Email of the member to be added.", required=True)
 @click.option("-g", "--group", help="Email address of the group", required=True)
-@click.option("-r", '--role',type=click.Choice(['MEMBER', 'OWNER'], case_sensitive=False), help="Members role", default="MEMBER", show_default=True)
+@click.option(
+    "-r",
+    "--role",
+    type=click.Choice(["MEMBER", "OWNER"], case_sensitive=False),
+    help="Members role",
+    default="MEMBER",
+    show_default=True,
+)
 @handle_cli_exceptions
 @command_with_output(None)
 def _click_command(state: State, member: str, group: str, role: str):

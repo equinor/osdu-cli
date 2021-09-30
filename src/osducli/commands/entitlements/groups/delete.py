@@ -9,7 +9,7 @@
 import click
 from osdu.entitlements import EntitlementsClient
 
-from osducli.click_cli import State, command_with_output
+from osducli.click_cli import State, global_params
 from osducli.cliclient import CliOsduClient, handle_cli_exceptions
 
 
@@ -17,7 +17,7 @@ from osducli.cliclient import CliOsduClient, handle_cli_exceptions
 @click.command()
 @click.option("-g", "--group", help="Email address of the group", required=True)
 @handle_cli_exceptions
-@command_with_output(None)
+@global_params
 def _click_command(state: State, group: str):
     """Delete a group."""
     delete_group(state, group)

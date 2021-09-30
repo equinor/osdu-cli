@@ -419,7 +419,7 @@ class HelpTextTests(unittest.TestCase):
 
         self.validate_output(
             "osdu entitlements members",
-            commands=("add", "list"),
+            commands=("add", "list", "remove"),
         )
 
         self.validate_output(
