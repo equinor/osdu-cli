@@ -6,7 +6,4 @@
 
 """ OSDU command line environment"""
 
-# from pkgutil import extend_path
-# __path__ = extend_path(__path__, __name__)
-
-__VERSION__ = "0.0.14"
+__VERSION__ = "0.0.15"

@@ -1,5 +1,5 @@
-# OSDU Command Line Interface (osducli)
-=======================================
+OSDU Command Line Interface (osducli)
+=====================================
 
 Command-line interface for interacting with OSDU.
 
@@ -10,23 +10,29 @@ The first time you use the CLI you should run the configure command to provide c
 
 .. code-block:: bash
 
-  osducli config update
+  osdu config update
 
 Once configured use the CLI as shown below. Omitting a command will display a list of available options.
 
 .. code-block:: bash
 
-  osducli <command>
+  osdu <command>
 
 For more information, specify the `-h` flag:
 
 .. code-block:: bash
 
-  osducli -h
-  osducli <command> -h
+  osdu -h
+  osdu <command> -h
 
 Change Log
 ==========
+
+0.0.15
+------
+
+- *entitlements members add* - added role option
+- *entitlements members remove* command added
 
 0.0.14
 ------
